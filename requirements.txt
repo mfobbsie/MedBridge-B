@@ -1,0 +1,16 @@
+fastapi
+uvicorn[standard]
+httpx
+psycopg2-binary
+pdfplumber
+groq
+python-dotenv
+pydantic-settings
+email-validator
+supabase
+tenacity
+tiktoken
+pymupdf
+pytesseract
+pillow
+python-multipart

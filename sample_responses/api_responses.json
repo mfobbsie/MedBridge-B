@@ -1,0 +1,254 @@
+{
+  "_description": "Sample API responses for MedBridge frontend development. Based on real Synthea patient data loaded into Supabase. Use these shapes to build UI components before the real backend is wired up.",
+
+  "GET /documents": [
+    {
+      "id": "198bb8ed-21d3-4798-ac47-0d512d60eed5",
+      "display_name": "Synthetic patient — Jessie665 Jimmy858 Kub800",
+      "source_type": "synthea",
+      "file_type": "synthea",
+      "status": "ready",
+      "created_at": "2026-06-09T06:00:00Z"
+    },
+    {
+      "id": "9236f782-5e4d-4301-b64c-55c72a5b07b5",
+      "display_name": "Synthetic patient — Jerónimo599 Emilio417 Guajardo157",
+      "source_type": "synthea",
+      "file_type": "synthea",
+      "status": "ready",
+      "created_at": "2026-06-09T06:00:00Z"
+    },
+    {
+      "id": "ca84575b-385a-4daa-83b6-793b2325196e",
+      "display_name": "Synthetic patient — Jess275 Brandon214 Bogisich202",
+      "source_type": "synthea",
+      "file_type": "synthea",
+      "status": "ready",
+      "created_at": "2026-06-09T06:00:00Z"
+    },
+    {
+      "id": "b2c3d4e5-f6a7-8901-bcde-f01234567891",
+      "display_name": "lab_results_june.pdf",
+      "source_type": "upload",
+      "file_type": "pdf",
+      "status": "ready",
+      "created_at": "2026-06-08T14:22:00Z"
+    }
+  ],
+
+  "GET /documents/{id}": {
+    "id": "198bb8ed-21d3-4798-ac47-0d512d60eed5",
+    "display_name": "Synthetic patient — Jessie665 Jimmy858 Kub800",
+    "source_type": "synthea",
+    "file_type": "synthea",
+    "status": "ready",
+    "created_at": "2026-06-09T06:00:00Z",
+    "summary": {
+      "plain_summary": null,
+      "audio_url": null,
+      "created_at": null
+    },
+    "conditions": [
+      {
+        "name": "Medication review due (situation)",
+        "code": "314529007",
+        "code_system": "SNOMED-CT",
+        "status": "resolved",
+        "onset_date": "2022-11-02",
+        "note": null
+      },
+      {
+        "name": "Acute bronchitis (disorder)",
+        "code": "10509002",
+        "code_system": "SNOMED-CT",
+        "status": "resolved",
+        "onset_date": "2022-11-09",
+        "note": null
+      },
+      {
+        "name": "Social isolation (finding)",
+        "code": "422650009",
+        "code_system": "SNOMED-CT",
+        "status": "resolved",
+        "onset_date": "2022-11-30",
+        "note": null
+      }
+    ],
+    "medications": [
+      {
+        "name": "lisinopril 10 MG Oral Tablet",
+        "code": "314076",
+        "code_system": "RxNorm",
+        "dose": null,
+        "frequency": null,
+        "route": null,
+        "status": "stopped",
+        "start_date": null,
+        "end_date": null
+      },
+      {
+        "name": "Clopidogrel 75 MG Oral Tablet",
+        "code": "309362",
+        "code_system": "RxNorm",
+        "dose": null,
+        "frequency": null,
+        "route": null,
+        "status": "active",
+        "start_date": null,
+        "end_date": null
+      },
+      {
+        "name": "Simvastatin 20 MG Oral Tablet",
+        "code": "312961",
+        "code_system": "RxNorm",
+        "dose": null,
+        "frequency": null,
+        "route": null,
+        "status": "active",
+        "start_date": null,
+        "end_date": null
+      },
+      {
+        "name": "24 HR metoprolol succinate 100 MG Extended Release Oral Tablet",
+        "code": "866412",
+        "code_system": "RxNorm",
+        "dose": null,
+        "frequency": null,
+        "route": null,
+        "status": "active",
+        "start_date": null,
+        "end_date": null
+      }
+    ],
+    "lab_results": [
+      {
+        "name": "pH of Urine by Test strip",
+        "code": "5803-2",
+        "code_system": "LOINC",
+        "value_quantity": 5.8872,
+        "value_text": "5.8872",
+        "unit": "pH",
+        "reference_range_low": null,
+        "reference_range_high": null,
+        "reference_range_text": null,
+        "flag": "unknown",
+        "observed_at": "2023-12-06T15:46:53Z"
+      },
+      {
+        "name": "Cholesterol [Mass/volume] in Serum or Plasma",
+        "code": "2093-3",
+        "code_system": "LOINC",
+        "value_quantity": 163.05,
+        "value_text": "163.05",
+        "unit": "mg/dL",
+        "reference_range_low": null,
+        "reference_range_high": null,
+        "reference_range_text": null,
+        "flag": "unknown",
+        "observed_at": "2017-11-01T15:46:53Z"
+      },
+      {
+        "name": "Triglyceride [Mass/volume] in Serum or Plasma",
+        "code": "2571-8",
+        "code_system": "LOINC",
+        "value_quantity": 129.55,
+        "value_text": "129.55",
+        "unit": "mg/dL",
+        "reference_range_low": null,
+        "reference_range_high": null,
+        "reference_range_text": null,
+        "flag": "unknown",
+        "observed_at": "2017-11-01T15:46:53Z"
+      },
+      {
+        "name": "Cholesterol in LDL [Mass/volume] in Serum or Plasma by Direct assay",
+        "code": "18262-6",
+        "code_system": "LOINC",
+        "value_quantity": 78.81,
+        "value_text": "78.81",
+        "unit": "mg/dL",
+        "reference_range_low": null,
+        "reference_range_high": null,
+        "reference_range_text": null,
+        "flag": "unknown",
+        "observed_at": "2017-11-01T15:46:53Z"
+      }
+    ],
+    "encounters": [
+      {
+        "encounter_type": "General examination of patient (procedure)",
+        "description": null,
+        "provider": "Dr. Colin861 Witting912",
+        "facility": "PALMER FAMILY SERVICES LLC",
+        "occurred_at": "2023-10-09T15:46:53Z"
+      },
+      {
+        "encounter_type": "General examination of patient (procedure)",
+        "description": null,
+        "provider": "Dr. Colin861 Witting912",
+        "facility": "PALMER FAMILY SERVICES LLC",
+        "occurred_at": "2026-03-18T15:46:53Z"
+      }
+    ],
+    "follow_ups": [],
+    "allergies": []
+  },
+
+  "POST /documents (upload response)": {
+    "id": "d4e5f6a7-b8c9-0123-defa-123456789013",
+    "display_name": "lab_results_june.pdf",
+    "file_type": "pdf",
+    "status": "processing"
+  },
+
+  "GET /documents/{id}/summary": {
+    "id": "198bb8ed-21d3-4798-ac47-0d512d60eed5",
+    "status": "ready",
+    "plain_summary": null,
+    "audio_url": null,
+    "created_at": null,
+    "_note": "plain_summary is null until POST /documents/{id}/summarize is called"
+  },
+
+  "POST /documents/{id}/chat (request body)": {
+    "message": "What medications am I currently taking?"
+  },
+
+  "POST /documents/{id}/chat (response)": {
+    "role": "assistant",
+    "content": "Based on your records, you are currently taking three active medications: Clopidogrel 75mg (a blood thinner), Simvastatin 20mg (for cholesterol), and Metoprolol succinate 100mg extended release (for heart rate/blood pressure). Lisinopril was previously prescribed but has been stopped. Please confirm all medications with your doctor before making any changes.",
+    "created_at": "2026-06-09T10:00:05Z"
+  },
+
+  "GET /documents/{id}/chat": [
+    {
+      "role": "user",
+      "content": "What medications am I currently taking?",
+      "created_at": "2026-06-09T10:00:00Z"
+    },
+    {
+      "role": "assistant",
+      "content": "Based on your records, you are currently taking three active medications: Clopidogrel 75mg (a blood thinner), Simvastatin 20mg (for cholesterol), and Metoprolol succinate 100mg extended release (for heart rate/blood pressure). Lisinopril was previously prescribed but has been stopped. Please confirm all medications with your doctor before making any changes.",
+      "created_at": "2026-06-09T10:00:05Z"
+    }
+  ],
+
+  "error_shape": {
+    "error": {
+      "code": "not_found",
+      "message": "Document not found or does not belong to this user"
+    }
+  },
+
+  "status_values": {
+    "description": "Poll GET /documents/{id} until status is ready",
+    "values": ["pending", "processing", "extracting", "extracted", "summarizing", "ready", "failed"]
+  },
+
+  "null_field_notes": {
+    "dose_frequency_route": "Synthea does not populate dose/frequency/route in MedicationRequest resources — these fields will be null for synthea source_type records. They will be populated for PDF uploads and Epic FHIR records.",
+    "reference_ranges": "Synthea Observation resources do not include reference ranges — these will be null. Flag will be unknown until the AI layer adds interpretation.",
+    "summary": "plain_summary and audio_url are null until the AI summarization endpoint is called.",
+    "follow_ups": "follow_ups are AI-generated from the summary — empty until summarization runs."
+  }
+}
