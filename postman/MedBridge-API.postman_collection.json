@@ -1,0 +1,716 @@
+{
+  "info": {
+    "_postman_id": "medbridge-api-collection",
+    "name": "MedBridge API",
+    "description": "Healthcare understanding API — patient document upload, AI summaries, chat, reminders, care team, and analytics.\n\n**Setup:**\n1. Import `MedBridge-Local.postman_environment.json`\n2. Run **Login** (or **Register**) — saves `access_token` automatically\n3. Use other requests — Bearer auth is applied at collection level\n\n**Local server:** `http://localhost:8000`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000" },
+    { "key": "access_token", "value": "" },
+    { "key": "user_id", "value": "" },
+    { "key": "document_id", "value": "" },
+    { "key": "summary_id", "value": "" },
+    { "key": "message_id", "value": "" },
+    { "key": "reminder_id", "value": "" },
+    { "key": "contact_id", "value": "" },
+    { "key": "followup_id", "value": "" },
+    { "key": "provider_id", "value": "" },
+    { "key": "resource_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health & Config",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health"
+          }
+        },
+        {
+          "name": "App Config",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/app/config"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', json.access_token);",
+                  "    pm.collectionVariables.set('user_id', json.user_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"securepassword\",\n  \"full_name\": \"Jane Patient\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/register"
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', json.access_token);",
+                  "    pm.collectionVariables.set('user_id', json.user_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"patient@example.com\",\n  \"password\": \"securepassword\"\n}"
+            },
+            "url": "{{baseUrl}}/auth/login"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Documents",
+      "item": [
+        {
+          "name": "Upload Document",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('document_id', json.document_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "" }
+              ]
+            },
+            "url": "{{baseUrl}}/documents/upload"
+          }
+        },
+        {
+          "name": "List Documents",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/documents"
+          }
+        },
+        {
+          "name": "Get Document",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/documents/{{document_id}}"
+          }
+        },
+        {
+          "name": "Delete Document",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/documents/{{document_id}}"
+          }
+        },
+        {
+          "name": "Get Summary",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('summary_id', json.summary_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/documents/{{document_id}}/summary"
+          }
+        },
+        {
+          "name": "Regenerate Summary",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/documents/{{document_id}}/summary"
+          }
+        },
+        {
+          "name": "Rate Understanding",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 5\n}"
+            },
+            "url": "{{baseUrl}}/summaries/{{summary_id}}/understanding"
+          }
+        },
+        {
+          "name": "Ask Question (Chat)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const json = pm.response.json();",
+                  "    pm.collectionVariables.set('message_id', json.message_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"question\": \"What were my cholesterol levels?\"\n}"
+            },
+            "url": "{{baseUrl}}/documents/{{document_id}}/chat"
+          }
+        },
+        {
+          "name": "Get Chat History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/documents/{{document_id}}/chat"
+          }
+        },
+        {
+          "name": "Stream Chat (SSE)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/documents/{{document_id}}/chat/stream?message=What does this document say about my blood pressure?&token={{access_token}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["documents", "{{document_id}}", "chat", "stream"],
+              "query": [
+                { "key": "message", "value": "What does this document say about my blood pressure?" },
+                { "key": "token", "value": "{{access_token}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Rate Chat Message",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4\n}"
+            },
+            "url": "{{baseUrl}}/chat/{{message_id}}/rating"
+          }
+        },
+        {
+          "name": "Appointment Prep",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/documents/{{document_id}}/prep"
+          }
+        },
+        {
+          "name": "Generate Health Score",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/documents/{{document_id}}/health-score"
+          }
+        },
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/dashboard"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reminders",
+      "item": [
+        {
+          "name": "List Reminders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/reminders"
+          }
+        },
+        {
+          "name": "Create Reminder",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('reminder_id', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reminder_type\": \"appointment\",\n  \"title\": \"Cardiology follow-up\",\n  \"body\": \"Bring lab results\",\n  \"remind_at\": \"2026-07-01T09:00:00Z\",\n  \"repeat_interval\": null,\n  \"health_record_id\": \"{{document_id}}\"\n}"
+            },
+            "url": "{{baseUrl}}/reminders"
+          }
+        },
+        {
+          "name": "Update Reminder",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated appointment reminder\"\n}"
+            },
+            "url": "{{baseUrl}}/reminders/{{reminder_id}}"
+          }
+        },
+        {
+          "name": "Complete Reminder",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/reminders/{{reminder_id}}/complete"
+          }
+        },
+        {
+          "name": "Delete Reminder",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/reminders/{{reminder_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Trusted Contacts",
+      "item": [
+        {
+          "name": "List Trusted Contacts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/trusted-contacts"
+          }
+        },
+        {
+          "name": "Add Trusted Contact",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('contact_id', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contact_email\": \"caregiver@example.com\",\n  \"contact_name\": \"Mom\",\n  \"access_level\": \"read\"\n}"
+            },
+            "url": "{{baseUrl}}/trusted-contacts"
+          }
+        },
+        {
+          "name": "Update Trusted Contact",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"access_level\": \"full\",\n  \"status\": \"accepted\"\n}"
+            },
+            "url": "{{baseUrl}}/trusted-contacts/{{contact_id}}"
+          }
+        },
+        {
+          "name": "Remove Trusted Contact",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/trusted-contacts/{{contact_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Follow-ups",
+      "item": [
+        {
+          "name": "List Follow-ups",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/documents/{{document_id}}/follow-ups"
+          }
+        },
+        {
+          "name": "Create Follow-up",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('followup_id', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"what\": \"Schedule follow-up blood test\",\n  \"when_text\": \"Within 2 weeks\",\n  \"due_date\": \"2026-07-15\"\n}"
+            },
+            "url": "{{baseUrl}}/documents/{{document_id}}/follow-ups"
+          }
+        },
+        {
+          "name": "Update Follow-up",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"completed\": true\n}"
+            },
+            "url": "{{baseUrl}}/follow-ups/{{followup_id}}"
+          }
+        },
+        {
+          "name": "Complete Follow-up",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/follow-ups/{{followup_id}}/complete"
+          }
+        },
+        {
+          "name": "Delete Follow-up",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/follow-ups/{{followup_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Providers",
+      "item": [
+        {
+          "name": "List Providers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/providers"
+          }
+        },
+        {
+          "name": "Add Provider",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    pm.collectionVariables.set('provider_id', pm.response.json().id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Dr. Sarah Chen\",\n  \"specialty\": \"Cardiology\",\n  \"phone\": \"555-123-4567\",\n  \"address\": \"123 Medical Center Dr\"\n}"
+            },
+            "url": "{{baseUrl}}/providers"
+          }
+        },
+        {
+          "name": "Update Provider",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"555-999-0000\"\n}"
+            },
+            "url": "{{baseUrl}}/providers/{{provider_id}}"
+          }
+        },
+        {
+          "name": "Delete Provider",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/providers/{{provider_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resources (Discover)",
+      "item": [
+        {
+          "name": "List Resources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/resources?resource_type=article&tag=diabetes",
+              "host": ["{{baseUrl}}"],
+              "path": ["resources"],
+              "query": [
+                { "key": "resource_type", "value": "article", "disabled": true },
+                { "key": "tag", "value": "diabetes", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Resource",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/resources/{{resource_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Scores",
+      "item": [
+        {
+          "name": "List Health Scores",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health-scores"
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Settings",
+      "item": [
+        {
+          "name": "Get User Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/user-settings/?user_id={{user_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["user-settings", ""],
+              "query": [{ "key": "user_id", "value": "{{user_id}}" }]
+            }
+          }
+        },
+        {
+          "name": "Update User Settings",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"enable_reminders\": true,\n  \"allow_trusted_contacts\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/user-settings/?user_id={{user_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["user-settings", ""],
+              "query": [{ "key": "user_id", "value": "{{user_id}}" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Submit Feedback",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"summary_id\": \"{{summary_id}}\",\n  \"rating\": 5,\n  \"feedback_text\": \"Very helpful summary\"\n}"
+            },
+            "url": "{{baseUrl}}/analytics/feedback"
+          }
+        },
+        {
+          "name": "Log Event",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_type\": \"summary_viewed\",\n  \"event_category\": \"documents\",\n  \"event_data\": {},\n  \"session_id\": \"postman-session\",\n  \"success\": true\n}"
+            },
+            "url": "{{baseUrl}}/analytics/events"
+          }
+        },
+        {
+          "name": "Get Analytics Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/analytics/settings"
+          }
+        },
+        {
+          "name": "Update Analytics Settings",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"preferred_language\": \"en\",\n  \"notification_enabled\": true\n}"
+            },
+            "url": "{{baseUrl}}/analytics/settings"
+          }
+        },
+        {
+          "name": "Patient Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/analytics/dashboard/patient"
+          }
+        },
+        {
+          "name": "Stakeholder Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/analytics/dashboard/stakeholder"
+          }
+        },
+        {
+          "name": "Team Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/analytics/dashboard/team"
+          }
+        },
+        {
+          "name": "Provider Readiness Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/analytics/dashboard/provider-readiness"
+          }
+        }
+      ]
+    }
+  ]
+}
