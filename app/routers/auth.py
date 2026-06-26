@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, status
+from supabase_auth.errors import AuthApiError
 from app.schemas.auth import RegisterRequest, LoginRequest, AuthResponse
 from app.database import get_supabase
 import logging
@@ -20,12 +21,13 @@ async def register(payload: RegisterRequest):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Registration failed. Please check your email and try again.",
             )
-        # Create user_profiles row
-        supabase.table("user_profiles").insert({
+        if not response.session:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Registration failed. Please check your email and try again.",
+            )
+        supabase.table("user_settings").insert({
             "user_id": response.user.id,
-            "full_name": payload.full_name,
-            "preferred_language": "en",
-            "explanation_level": "plain",
         }).execute()
 
         return AuthResponse(
@@ -35,6 +37,16 @@ async def register(payload: RegisterRequest):
         )
     except HTTPException:
         raise
+    except AuthApiError as e:
+        if "rate limit" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Supabase signup rate limit exceeded.",
+            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Registration failed. This email may already be registered.",
+        )
     except Exception as e:
         logger.exception(f"Registration error: {e}")
         raise HTTPException(
