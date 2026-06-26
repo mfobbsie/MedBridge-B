@@ -83,6 +83,16 @@ async def login(payload: LoginRequest):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid email or password.",
             )
+
+        if not response.session:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=(
+                    "Email not confirmed. Check your inbox or disable email "
+                    "confirmation in Supabase Auth settings, then log in."
+                ),
+            )
+
         return AuthResponse(
             access_token=response.session.access_token,
             user_id=response.user.id,

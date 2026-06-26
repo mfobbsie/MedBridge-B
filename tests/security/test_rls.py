@@ -73,8 +73,13 @@ class TestAuthentication:
         assert resp.status_code == 401
 
     def test_login_returns_token(self, client):
-        token = _login(client, USER_A)
-        assert len(token) > 20
+        resp = client.post("/auth/login", json=USER_A)
+        assert resp.status_code == 200, f"Login failed ({resp.status_code}): {resp.text}"
+        data = resp.json()
+        assert len(data["access_token"]) > 20
+        assert data["token_type"] == "bearer"
+        assert data["email"] == USER_A["email"]
+        assert data["user_id"]
 
     def test_invalid_credentials_rejected(self, client):
         resp = client.post("/auth/login", json={
@@ -82,6 +87,18 @@ class TestAuthentication:
             "password": "wrong-password"
         })
         assert resp.status_code == 401
+
+    def test_login_unknown_email_rejected(self, client):
+        resp = client.post("/auth/login", json={
+            "email": "no-such-user@example.com",
+            "password": "any-password",
+        })
+        assert resp.status_code == 401
+        assert resp.json()["detail"] == "Invalid email or password."
+
+    def test_login_missing_fields_rejected(self, client):
+        resp = client.post("/auth/login", json={})
+        assert resp.status_code == 422
 
 
 # ── Cross-user document access ────────────────────────────────────────────────
