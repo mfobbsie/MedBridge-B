@@ -3,3 +3,44 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+# === SECRETS — NEVER COMMIT THESE ===
+.env
+*.env
+.env.*
+!.env.example
+
+# === PYTHON ===
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# === SYNTHEA OUTPUT (too large for git) ===
+output/
+synthea-with-dependencies.jar
+*.jar
+
+# === DATABASE ===
+*.db
+*.sqlite
+
+# === IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# === OS ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === LOGS ===
+*.log
+logs/
