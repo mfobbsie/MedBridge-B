@@ -13,6 +13,7 @@ export const AuthProvider = ({children}: Props) => {
 
     const [token, setToken] = useState<string | null>(null);
     const [userProfile, setUserProfile] = useState<any | null>(null);
+    const [ isLoading] = useState<boolean>(false);
 
 
     const login = (newToken: string, userProfile: UserProfile) => {
@@ -27,6 +28,7 @@ export const AuthProvider = ({children}: Props) => {
     };
 
     const value: AuthContextInterface = {
+        isLoading,
         token,
         userProfile,
         login,

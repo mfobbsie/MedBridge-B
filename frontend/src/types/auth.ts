@@ -29,6 +29,7 @@ export interface UserProfile {
 }
 
 export interface AuthContextInterface {
+    isLoading?: boolean;
     token: string | null;
     userProfile: UserProfile | null;
     login: (token:string, userProfile:any) => void;
