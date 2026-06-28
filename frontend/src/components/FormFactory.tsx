@@ -1,6 +1,7 @@
 import { useLogin } from "../api/apiHelper";
 import { useRegister } from "../api/auth.queries";
 import { FORM_CONFIG } from "../config/formRegistry";
+import { useAuth } from "../context/AuthContext";
 import { useModal } from "../context/ModalContext";
 import { useForm } from "../hooks/useForm";
 import type { LoginRequest, RegisterRequest } from "../types/auth";
@@ -25,6 +26,7 @@ export const FormFactory = ({ config }: FormFactoryConfig) => {
     const activeError = config === "login" ? loginError : registerError
     const isLoading = config === "login" ? isLogingIn : isRegistering;
     const { closeModal } = useModal();
+    const { login: saveSession } = useAuth();
 
     const handleSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -32,8 +34,10 @@ export const FormFactory = ({ config }: FormFactoryConfig) => {
         switch (config) {
             case "login":
                 login(values as unknown as LoginRequest, {
-                    onSuccess: () => {
-                        closeModal();
+                    onSuccess: (data) => {
+                        if(data.access_token){
+                            saveSession(data.access_token, data.user_id)
+                        }
                     }
                 });
                 break;

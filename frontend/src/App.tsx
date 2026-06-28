@@ -3,6 +3,7 @@ import { useModal } from "./context/ModalContext";
 
 export default function App() {
   const { openModal } = useModal();
+ 
 
   return (
     <div style={styles.container}>

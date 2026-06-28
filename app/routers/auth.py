@@ -21,7 +21,7 @@ async def register(payload: RegisterRequest):
                 detail="Registration failed. Please check your email and try again.",
             )
         # Create user_profiles row
-        #maybe auth.users or user_profiles
+        #maybe auth.users or user_profiles or user_settings
         supabase.table("user_profiles").insert({
             "user_id": response.user.id,
             "full_name": payload.full_name,
