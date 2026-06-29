@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
 import type { AuthContextInterface, UserProfile } from "../types/auth";
+import { clearAuthCookie, getAuthCookie, setAuthCookie } from "../api/apiHelper";
 
 
 interface Props {
@@ -11,18 +12,20 @@ export const AuthContext = React.createContext<AuthContextInterface | null>(null
 export const AuthProvider = ({children}: Props) => {
 
 
-    const [token, setToken] = useState<string | null>(null);
-    const [userProfile, setUserProfile] = useState<any | null>(null);
+    const [token, setToken] = useState<string | null>(() => getAuthCookie());
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [ isLoading] = useState<boolean>(false);
 
 
     const login = (newToken: string, userProfile: UserProfile) => {
+        setAuthCookie(newToken);
         setToken(newToken);
         setUserProfile(userProfile);
     };
 
 
     const logout = () => {
+        clearAuthCookie();
         setToken(null);
         setUserProfile(null);
     };

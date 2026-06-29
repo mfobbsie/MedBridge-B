@@ -1,4 +1,4 @@
-import { useLogin } from "../api/apiHelper";
+import { useLogin } from "../api/auth.queries";
 import { useRegister } from "../api/auth.queries";
 import { FORM_CONFIG } from "../config/formRegistry";
 import { useAuth } from "../context/AuthContext";
