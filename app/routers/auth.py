@@ -21,6 +21,7 @@ async def register(payload: RegisterRequest):
                 detail="Registration failed. Please check your email and try again.",
             )
         # Create user_profiles row
+        #maybe auth.users or user_profiles or user_settings
         supabase.table("user_profiles").insert({
             "user_id": response.user.id,
             "full_name": payload.full_name,
@@ -28,8 +29,12 @@ async def register(payload: RegisterRequest):
             "explanation_level": "plain",
         }).execute()
 
+        #! added this for sessions that are not granted immediately(email confirmation is pending).
+
+        token = response.session.access_token if response.session else None
+
         return AuthResponse(
-            access_token=response.session.access_token,
+            access_token=token,
             user_id=response.user.id,
             email=response.user.email,
         )
