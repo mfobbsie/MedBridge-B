@@ -1,5 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Didact+Gothic&display=swap');
+
 .app-container {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Didact Gothic', system-ui, -apple-system, sans-serif;
   min-height: 100vh;
   background-color: #f9fafb;
   display: flex;
