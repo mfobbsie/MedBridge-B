@@ -44,3 +44,5 @@ desktop.ini
 # === LOGS ===
 *.log
 logs/
+
+app-frontend/node_modules
