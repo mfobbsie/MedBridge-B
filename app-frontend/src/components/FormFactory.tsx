@@ -14,7 +14,8 @@ import type { FormFactoryConfig } from "../types/form";
 export const FormFactory = ({ config }: FormFactoryConfig) => {
 
     const fields = FORM_CONFIG[config];
-    const { values,
+    const {
+        values,
         touched,
         errors,
         changeHandler,
@@ -35,7 +36,7 @@ export const FormFactory = ({ config }: FormFactoryConfig) => {
             case "login":
                 login(values as unknown as LoginRequest, {
                     onSuccess: (data) => {
-                        if(data.access_token){
+                        if (data.access_token) {
                             saveSession(data.access_token, data.user_id)
                         }
                     }
