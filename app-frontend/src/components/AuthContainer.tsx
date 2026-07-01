@@ -1,13 +1,15 @@
 import { FormFactory } from "./FormFactory";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
+import { useLogout } from "../api/auth.queries";
 
 
 type AuthOption = "login" | "registration"
 export const AuthContainer = () => {
     const [authOption, setAuthOption] = useState<AuthOption>("login");
-    const { token, logout } = useAuth();
-  
+    const { token } = useAuth();
+    const { mutate: handleLogout, isPending } = useLogout();
+
 
 
 
@@ -26,7 +28,7 @@ export const AuthContainer = () => {
                             display: "flex",
                             width: "260px",
                             height: "40px",
-                            backgroundColor: "#e4e4e7", // Light gray background track
+                            backgroundColor: "#e4e4e7",
                             borderRadius: "20px",
                             padding: "4px",
                             marginBottom: "32px",
@@ -98,7 +100,12 @@ export const AuthContainer = () => {
             {token !== null &&
                 <div>
                     <h1>Login Successful</h1>
-                    <button onClick={logout}>Logout</button>
+                    <button
+                        onClick={() => handleLogout()}
+                        disabled={isPending}
+                    >
+                        Logout
+                    </button>
 
                 </div>}
         </>
