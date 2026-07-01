@@ -28,8 +28,25 @@ Store the JWT in memory (not localStorage). On 401, redirect to login. On logout
 POST /auth/register
 Content-Type: application/json
 
-{ "email": "patient@example.com", "password": "securepassword" }
+{
+  "email": "patient@example.com",
+  "password": "securepassword",
+  "full_name": "Jane Patient"
+}
 ```
+- **Required:** `email`, `password` (minimum 8 characters)
+- **Optional:** `full_name`
+
+Response (201):
+```json
+{
+  "access_token": "<jwt>",
+  "token_type": "bearer",
+  "user_id": "<uuid>",
+  "email": "patient@example.com"
+}
+```
+Password is never returned.
 
 ### Login
 

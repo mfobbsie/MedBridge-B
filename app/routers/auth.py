@@ -12,9 +12,10 @@ logger = logging.getLogger(__name__)
 
 @router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 async def register(payload: RegisterRequest):
-    supabase = get_supabase()
+    auth_client = get_supabase_auth()
+    admin = get_supabase()
     try:
-        response = supabase.auth.sign_up({
+        response = auth_client.auth.sign_up({
             "email": payload.email,
             "password": payload.password,
         })
@@ -54,15 +55,15 @@ async def register(payload: RegisterRequest):
         logger.exception(f"Registration error: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Registration failed. This email may already be registered.",
+            detail="Registration failed. Please try again.",
         )
 
 
 @router.post("/login", response_model=AuthResponse)
 async def login(payload: LoginRequest):
-    supabase = get_supabase()
+    auth_client = get_supabase_auth()
     try:
-        response = supabase.auth.sign_in_with_password({
+        response = auth_client.auth.sign_in_with_password({
             "email": payload.email,
             "password": payload.password,
         })
@@ -71,6 +72,16 @@ async def login(payload: LoginRequest):
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid email or password.",
             )
+
+        if not response.session:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=(
+                    "Email not confirmed. Check your inbox or disable email "
+                    "confirmation in Supabase Auth settings, then log in."
+                ),
+            )
+
         return AuthResponse(
             access_token=response.session.access_token,
             user_id=response.user.id,
@@ -78,6 +89,10 @@ async def login(payload: LoginRequest):
         )
     except HTTPException:
         raise
+    except AuthApiError as e:
+        logger.warning("Login rejected by Supabase: %s", e)
+        status_code, detail = map_auth_error(e, context="login")
+        raise HTTPException(status_code=status_code, detail=detail)
     except Exception as e:
         logger.exception(f"Login error: {e}")
         raise HTTPException(
