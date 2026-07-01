@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials
 from supabase_auth.errors import AuthApiError
 from app.schemas.auth import RegisterRequest, LoginRequest, AuthResponse
-from app.database import get_supabase
+from app.database import get_supabase, get_supabase_auth
 from app.middleware.auth import bearer_scheme, get_current_user
 import logging
 
