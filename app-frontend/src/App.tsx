@@ -14,7 +14,7 @@ export default function App(): JSX.Element {
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1 className="app-title">Welcome to the Platform</h1>
+        <h1 className="app-title">Welcome to MedBridge</h1>
       </header>
 
       <main className="action-row">
