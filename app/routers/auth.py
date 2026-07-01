@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials
 from supabase_auth.errors import AuthApiError
 from app.schemas.auth import RegisterRequest, LoginRequest, AuthResponse
 from app.database import get_supabase
+from app.middleware.auth import bearer_scheme, get_current_user
 import logging
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -92,12 +94,17 @@ async def login(payload: LoginRequest):
 
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-async def logout():
-    # Supabase JWTs are stateless; client discards the token.
-    # Server-side sign-out invalidates the refresh token.
+async def logout(
+    user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    """
+    Revoke refresh tokens for the authenticated user (global scope).
+    Access JWTs remain valid until expiry; the client must discard the token.
+    """
     supabase = get_supabase()
     try:
-        supabase.auth.sign_out()
-    except Exception:
-        pass  # Best-effort logout
+        supabase.auth.admin.sign_out(credentials.credentials, scope="global")
+    except Exception as e:
+        logger.warning("Supabase admin sign_out failed for user %s: %s", user["id"], e)
     return
