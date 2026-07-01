@@ -29,12 +29,17 @@ async def register(payload: RegisterRequest):
             )
 
         # Create user_profiles row
+        #maybe auth.users or user_profiles or user_settings
         supabase.table("user_profiles").insert({
             "user_id": response.user.id,
         }).execute()
 
+        #! added this for sessions that are not granted immediately(email confirmation is pending).
+
+        token = response.session.access_token if response.session else None
+
         return AuthResponse(
-            access_token=response.session.access_token,
+            access_token=token,
             user_id=response.user.id,
             email=response.user.email,
         )
