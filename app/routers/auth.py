@@ -24,6 +24,13 @@ async def register(payload: RegisterRequest):
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Registration failed. Please check your email and try again.",
             )
+
+        if not response.session:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Registration failed. Please check your email and try again.",
+            )
+
         # Create user_profiles row
         #maybe auth.users or user_profiles or user_settings
         supabase.table("user_profiles").insert({
