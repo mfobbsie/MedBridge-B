@@ -1,0 +1,77 @@
+.medical-history-page {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  background: #F7FAFC; /* soft white background */
+  color: #1B3A5C; /* deep navy text */
+}
+
+/* LEFT SIDEBAR */
+.sidebar {
+  width: 30%;
+  background: #E8F4FD; /* light blue */
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #2D7DD2; /* blue border */
+}
+
+.sidebar-title {
+  margin-bottom: 1rem;
+  color: #1B3A5C;
+}
+
+.sidebar-section {
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-section h2 {
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  color: #2D7DD2; /* blue section headers */
+}
+
+/* RIGHT MAIN CONTENT */
+.main-content {
+  width: 70%;
+}
+
+.main-title {
+  margin-bottom: 0.5rem;
+  color: #1B3A5C;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.tab-buttons button {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  border: 1px solid #2D7DD2;
+  background: #E8F4FD;
+  color: #1B3A5C;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tab-buttons button:hover {
+  background: #3ABFBF; /* teal hover */
+  color: white;
+  border-color: #3ABFBF;
+}
+
+.tab-buttons button.active {
+  background: #2D7DD2; /* blue active */
+  color: white;
+  border-color: #2D7DD2;
+}
+
+.tab-content {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #F7FAFC;
+  border-radius: 8px;
+  border: 1px solid #E8F4FD;
+}
