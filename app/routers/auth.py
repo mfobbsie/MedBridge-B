@@ -5,6 +5,7 @@ from app.schemas.auth import RegisterRequest, LoginRequest, AuthResponse
 from app.database import get_supabase, get_supabase_auth
 from app.middleware.auth import bearer_scheme, get_current_user
 import logging
+from app.services.auth_errors import map_auth_error
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 logger = logging.getLogger(__name__)
@@ -32,8 +33,7 @@ async def register(payload: RegisterRequest):
             )
 
         # Create user_profiles row
-        #maybe auth.users or user_profiles or user_settings
-        supabase.table("user_profiles").insert({
+        admin.table("user_profiles").insert({
             "user_id": response.user.id,
         }).execute()
 
