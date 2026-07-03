@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     secret_key: str = "dev-secret-key-change-in-production"
     max_file_size_mb: int = 10
-    allowed_origins: str = "http://localhost:3000"
+    allowed_origins: str = "http://localhost:3000, http://localhost:5173"
     ocr_confidence_threshold: int = 60
     tesseract_cmd: str = "tesseract"
     chunk_size_tokens: int = 500
