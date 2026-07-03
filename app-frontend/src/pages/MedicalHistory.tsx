@@ -1,6 +1,5 @@
 // src/pages/MedicalHistory.tsx
 import { useState } from "react";
-import { NavBar } from "../components/NavBar";
 import "../main.css";
 import "./MedicalHistory.css";
 
@@ -11,7 +10,6 @@ export const MedicalHistory = () => {
 
   return (
     <>
-      <NavBar />
 
       <div className="medical-history-page">
         {/* PROFILE SIDEBAR */}

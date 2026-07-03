@@ -1,12 +1,10 @@
 // src/pages/UploadDocs.tsx
 import type { ReactNode } from "react";
-import { NavBar } from "../components/NavBar";
 import "../main.css";
 
 export const UploadDocs = (): ReactNode => {
   return (
     <div className="page-container">
-      <NavBar />
       <h1 className="page-title">Upload Documents</h1>
       <p className="page-description">
         Upload medical documents, lab results, or provider notes here.
