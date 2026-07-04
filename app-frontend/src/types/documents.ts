@@ -30,7 +30,7 @@ export interface DocumentListResponse {
 export interface UploadResponse {
     document_id: string;
     status: DocumentStatus;
-    message: string;
+    message?: string;
 }
 
 export interface SummaryResponse {
@@ -89,7 +89,7 @@ export interface PrepResponse {
 
 
 
-export interface UnderstadingResponse {
+export interface UnderstandingResponse {
     id: string;
     summary_id: string;
     rating: string;

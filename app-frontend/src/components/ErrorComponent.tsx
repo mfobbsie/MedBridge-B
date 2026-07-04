@@ -1,5 +1,10 @@
-export const ErrorComponent = (error: string) => {
+interface ErrorComponentProps {
+    error?: string;
+}
+
+
+export const ErrorComponent = ({error = "Something went wrong. Please try again."}: ErrorComponentProps) => {
     return (
-        <h3 className="Error">Error:{error}</h3>
+        <h3 className="error">Error:{error}</h3>
     )
 }
