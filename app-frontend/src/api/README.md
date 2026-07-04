@@ -11,7 +11,7 @@ By leveraging this architecture, frontend features can be implemented without ma
 Every view or element interacting with server data must follow a standardized **State Machine Layout**. This ensures compliance with our active sprint deliverables:
 
 1. **Fetch & Render:** Automatic invocation on mount with strict typing.
-2. **Prevent UI Freezing:** Responsive loading placeholders or skeletons.
+2. **Prevent UI Freezing:** Responsive loading spinner(already created in the components folder).
 3. **Graceful Failure:** A consistent `"Something went wrong"` banner for `4xx` or `5xx` exceptions.
 4. **Empty State Security:** Dedicated fallbacks when payload arrays return empty.
 
