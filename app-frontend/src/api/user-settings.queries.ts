@@ -24,7 +24,7 @@ export const useGetUserSettings = (user_id: string) => {
         queryKey: ["user-settings", user_id],
         queryFn: () => {
             return apiHelper({
-                url: `/user-settings/?user_id=${user_id}`,
+                url: `http://localhost:8000/user-settings/?user_id=${user_id}`,
                 method: "GET",
                 body: null
             })
@@ -39,7 +39,7 @@ export const useUpdateUserSettings = (user_id: string) => {
     return useMutation<UserSettingsResponse, Error, UpdateUserSettings>({
         mutationFn: (body) => {
             return apiHelper({
-                url: `/user-settings/?user_id=${user_id}`,
+                url: `http://localhost:8000/user-settings/?user_id=${user_id}`,
                 method: "PATCH",
                 body: body
             })

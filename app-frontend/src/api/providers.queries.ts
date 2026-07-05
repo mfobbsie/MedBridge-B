@@ -10,7 +10,7 @@ export const useListProviders = () => {
         queryKey: ["providers"],
         queryFn: () => {
             return apiHelper({
-                url: "/providers",
+                url: "http://localhost:8000/providers",
                 method: "GET",
                 body: null
             })
@@ -24,7 +24,7 @@ export const useAddProvider = () => {
     return useMutation<ProviderResponse, Error, ProviderCreate>({
         mutationFn: (body) => {
             return apiHelper({
-                url: "/providers",
+                url: "http://localhost:8000/providers",
                 method: "POST",
                 body: body
             })
@@ -46,7 +46,7 @@ export const useUpdateProvider = () => {
     return useMutation<ProviderResponse, Error, { provider_id: string, body: ProviderUpdate }>({
         mutationFn: ({ provider_id, body }) => {
             return apiHelper({
-                url: `/providers/${provider_id}`,
+                url: `http://localhost:8000/providers/${provider_id}`,
                 method: "PATCH",
                 body: body
             })
@@ -68,7 +68,7 @@ export const useDeleteProvider = () => {
     return useMutation<void, Error, string>({
         mutationFn: ( provider_id:string ) => {
             return apiHelper({
-                url: `/providers/${provider_id}`,
+                url: `http://localhost:8000/providers/${provider_id}`,
                 method: "DELETE",
                 body:null
             })

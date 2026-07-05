@@ -10,6 +10,12 @@ export interface ReminderCreate {
 }
 
 
+export interface ReminderCreate {
+    title: string;
+    due_date?: string;
+    notes?: string;
+}
+
 export interface ReminderUpdate {
     title?: string;
     body?: string;
@@ -33,6 +39,16 @@ export interface ReminderResponse {
     created_at: string;
 }
 
+
+export interface ReminderResponse {
+    reminder_id: string;
+    user_id: string;
+    document_id?: string;
+    title: string;
+    due_date?: string;
+    notes?: string;
+    created_at: string;
+}
 
 
 export interface TrustedContactCreate {

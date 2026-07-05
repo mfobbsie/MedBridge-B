@@ -10,7 +10,7 @@ export const useListTrustedContacts = () => {
         queryKey: ["trusted-contacts"],
         queryFn: () => {
             return apiHelper({
-                url: "/trusted-contacts",
+                url: "http://localhost:8000/trusted-contacts",
                 method: "GET",
                 body: null
             })
@@ -24,7 +24,7 @@ export const useAddTrustedContact = () => {
     return useMutation<TrustedContactResponse, Error, TrustedContactCreate>({
         mutationFn: (body) => {
             return apiHelper({
-                url: "/trusted-contacts",
+                url: "http://localhost:8000/trusted-contacts",
                 method: "POST",
                 body: body
             })
@@ -46,7 +46,7 @@ export const useUpdateTrustedContact = () => {
     return useMutation<TrustedContactResponse, Error, { contact_id: string, body: TrustedContactUpdate }>({
         mutationFn: ({ contact_id, body }) => {
             return apiHelper({
-                url: `/trusted-contacts/${contact_id}`,
+                url: `http://localhost:8000/trusted-contacts/${contact_id}`,
                 method: "PATCH",
                 body: body
             })
@@ -68,7 +68,7 @@ export const useRemoveTrustedContact = () => {
     return useMutation<void, Error, string>({
         mutationFn: ( contact_id:string ) => {
             return apiHelper({
-                url: `/trusted-contacts/${contact_id}`,
+                url: `http://localhost:8000/trusted-contacts/${contact_id}`,
                 method: "DELETE",
                 body:null
             })

@@ -37,7 +37,7 @@ export const useGetApplicationConfig = () => {
         queryKey: ["config"],
         queryFn: () => {
             return apiHelper({
-                url: "/app/config",
+                url: "http://localhost:8000/app/config",
                 method: "GET",
                 body: null,
             });

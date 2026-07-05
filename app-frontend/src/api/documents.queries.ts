@@ -8,7 +8,7 @@ export const useUploadDocument = () => {
     return useMutation<UploadResponse, Error, FormData>({
         mutationFn: (body: FormData) => {
             return apiHelper({
-                url: "/documents/upload",
+                url: "http://localhost:8000/documents/upload",
                 method: "POST",
                 body: body,
             });
@@ -31,7 +31,7 @@ export const useListDocuments = () => {
         queryKey: ["documents"],
         queryFn: () => {
             return apiHelper({
-                url: "/documents",
+                url: "http://localhost:8000/documents",
                 method: "GET",
                 body: null,
             })
@@ -45,7 +45,7 @@ export const useGetDocument = (document_id: string) => {
         queryKey: ["documents", document_id],
         queryFn: () => {
             return apiHelper({
-                url: `/documents/${document_id}`,
+                url: `http://localhost:8000/documents/${document_id}`,
                 method: "GET",
                 body: null,
             })
@@ -59,7 +59,7 @@ export const useDeleteDocument = () => {
     return useMutation<void, Error, string>({
         mutationFn: (document_id: string) => {
             return apiHelper({
-                url: `/documents/${document_id}`,
+                url: `http://localhost:8000/documents/${document_id}`,
                 method: "DELETE",
                 body: null,
             })
@@ -83,7 +83,7 @@ export const useGetSummary = (document_id: string) => {
         queryKey: ["documents", document_id, "summary"],
         queryFn: () => {
             return apiHelper({
-                url: `/documents/${document_id}/summary`,
+                url: `http://localhost:8000/documents/${document_id}/summary`,
                 method: "GET",
                 body: null,
             })
@@ -97,7 +97,7 @@ export const useRegenerateSummary = () => {
     return useMutation<SummaryResponse, Error, string>({
         mutationFn: (document_id: string) => {
             return apiHelper({
-                url: `/documents/${document_id}/summary`,
+                url: `http://localhost:8000/documents/${document_id}/summary`,
                 method: "POST",
                 body: null,
             })
@@ -122,7 +122,7 @@ export const useGenerateAppointmentPrep = () => {
     return useMutation<PrepResponse, Error, string>({
         mutationFn: (document_id) => {
             return apiHelper({
-                url: `/documents/${document_id}/prep`,
+                url: `http://localhost:8000/documents/${document_id}/prep`,
                 method: "POST",
                 body: null,
             })
@@ -147,7 +147,7 @@ export const useDashboard = () => {
         queryKey: ["documents", "dashboard"],
         queryFn: () => {
             return apiHelper({
-                url: "/dashboard",
+                url: "http://localhost:8000/dashboard",
                 method: "GET",
                 body: null,
             })

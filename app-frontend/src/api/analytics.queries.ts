@@ -32,7 +32,7 @@ export const useSubmitFeedback = () => {
     return useMutation<void, Error, FeedbackSubmit>({
         mutationFn: (body: FeedbackSubmit) => {
             return apiHelper({
-                url: "/analytics/feedback",
+                url: "http://localhost:8000/analytics/feedback",
                 method: "POST",
                 body: body,
             });
@@ -58,7 +58,7 @@ export const useLogEvent = () => {
     return useMutation<void, Error, EventLog>({
         mutationFn: (body: EventLog) => {
             return apiHelper({
-                url: "/analytics/events",
+                url: "http://localhost:8000/analytics/events",
                 method: "POST",
                 body: body,
             });
@@ -81,7 +81,7 @@ export const useGetUserSettings = () => {
         queryKey: ["analytics", "settings"],
         queryFn: () => {
             return apiHelper({
-                url: "/analytics/settings",
+                url: "http://localhost:8000/analytics/settings",
                 method: "GET",
                 body: null,
             })
@@ -96,7 +96,7 @@ export const useUpdateUserSettings = () => {
     return useMutation<void, Error, UserSettingsUpdate>({
         mutationFn: (body: UserSettingsUpdate) => {
             return apiHelper({
-                url: "/analytics/settings",
+                url: "http://localhost:8000/analytics/settings",
                 method: "PATCH",
                 body: body,
             });
@@ -120,7 +120,7 @@ export const usePatientDashboard = () => {
         queryKey: ["analytics", "dashboard", "patient"],
         queryFn: () => {
             return apiHelper({
-                url: "/analytics/dashboard/patient",
+                url: "http://localhost:8000/analytics/dashboard/patient",
                 method: "GET",
                 body: null,
             })
@@ -134,7 +134,7 @@ export const useStakeholderDashboard = () => {
         queryKey: ["analytics", "dashboard", "stakeholder"],
         queryFn: () => {
             return apiHelper({
-                url: "/analytics/dashboard/stakeholder",
+                url: "http://localhost:8000/analytics/dashboard/stakeholder",
                 method: "GET",
                 body: null,
             })
@@ -148,7 +148,7 @@ export const useTeamDashboard = () => {
         queryKey: ["analytics", "dashboard", "team"],
         queryFn: () => {
             return apiHelper({
-                url: "/analytics/dashboard/team",
+                url: "http://localhost:8000/analytics/dashboard/team",
                 method: "GET",
                 body: null,
             })
@@ -162,7 +162,7 @@ export const useProviderReadinessDashboard = () => {
         queryKey: ["analytics", "dashboard", "provider-readiness"],
         queryFn: () => {
             return apiHelper({
-                url: "/analytics/dashboard/provider-readiness",
+                url: "http://localhost:8000/analytics/dashboard/provider-readiness",
                 method: "GET",
                 body: null,
             })

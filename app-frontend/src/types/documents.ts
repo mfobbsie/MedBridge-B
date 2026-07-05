@@ -153,24 +153,6 @@ export interface ErrorEnvelope {
 
 
 
-//! Duplicate interface in feature file:
-
-export interface ReminderCreate {
-    title: string;
-    due_date?: string;
-    notes?: string;
-}
-
-export interface ReminderResponse {
-    reminder_id: string;
-    user_id: string;
-    document_id?: string;
-    title: string;
-    due_date?: string;
-    notes?: string;
-    created_at: string;
-}
-
 
 
 

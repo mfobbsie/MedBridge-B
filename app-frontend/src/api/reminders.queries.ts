@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { apiHelper } from "./apiHelper"
-import type { ReminderCreate, ReminderResponse } from "../types/documents"
-import type { ReminderUpdate } from "../types/features"
+import type { ReminderUpdate, ReminderCreate, ReminderResponse } from "../types/features"
 
 
 
@@ -10,7 +9,7 @@ export const useListReminders = () => {
         queryKey: ["reminders"],
         queryFn: () => {
             return apiHelper({
-                url: "/reminders",
+                url: "http://localhost:8000/reminders",
                 method: "GET",
                 body: null
             })
@@ -24,7 +23,7 @@ export const useCreateReminder = () => {
     return useMutation<ReminderResponse, Error, ReminderCreate>({
         mutationFn: (body) => {
             return apiHelper({
-                url: "/reminders",
+                url: "http://localhost:8000/reminders",
                 method: "POST",
                 body: body
             })
@@ -46,7 +45,7 @@ export const useUpdateReminder = () => {
     return useMutation<ReminderResponse, Error, { reminder_id: string, body: ReminderUpdate }>({
         mutationFn: ({ reminder_id, body }) => {
             return apiHelper({
-                url: `/reminders/${reminder_id}`,
+                url: `http://localhost:8000/reminders/${reminder_id}`,
                 method: "PATCH",
                 body: body
             })
@@ -68,7 +67,7 @@ export const useDeleteReminder = () => {
     return useMutation<void, Error, string>({
         mutationFn: ( reminder_id:string ) => {
             return apiHelper({
-                url: `/reminders/${reminder_id}`,
+                url: `http://localhost:8000/reminders/${reminder_id}`,
                 method: "DELETE",
                 body:null
             })
@@ -90,7 +89,7 @@ export const useCompleteReminder = () => {
     return useMutation<void, Error, string>({
         mutationFn: ( reminder_id:string ) => {
             return apiHelper({
-                url: `/reminders/${reminder_id}/complete`,
+                url: `http://localhost:8000/reminders/${reminder_id}/complete`,
                 method: "POST",
                 body:null
             })

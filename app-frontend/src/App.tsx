@@ -2,6 +2,7 @@ import { type ReactNode } from "react";
 import { AuthContainer } from "./components/AuthContainer";
 import { useModal } from "./context/ModalContext";
 import "./main.css";
+import { ApiSandbox } from "./components/ApiSandbox";
 
 export default function App(): ReactNode {
   const { openModal } = useModal();
@@ -22,6 +23,10 @@ export default function App(): ReactNode {
         <button type="button" className="login-btn" onClick={handleOpenAuth}>
           🔑 Sign In
         </button>
+
+        <ApiSandbox />
+
+
       </main>
     </div>
   );

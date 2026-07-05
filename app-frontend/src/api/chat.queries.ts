@@ -87,7 +87,7 @@ export const useRateMessage = () => {
     return useMutation<string, Error, { message_id: string, body: FeedbackRequest }>({
         mutationFn: ({ message_id, body }) => {
             return apiHelper({
-                url: `/chat/${message_id}/rating`,
+                url: `http://localhost:8000/chat/${message_id}/rating`,
                 method: "PATCH",
                 body: body,
             })
@@ -110,7 +110,7 @@ export const useGetChatHistory = (document_id: string) => {
         queryKey: ["chat", document_id],
         queryFn: () => {
             return apiHelper({
-                url: `/documents/${document_id}/chat`,
+                url: `http://localhost:8000/documents/${document_id}/chat`,
                 method: "GET",
                 body: null,
             })
@@ -126,7 +126,7 @@ export const useAskQuestion = () => {
     return useMutation<ChatResponse, Error, { document_id: string, body: ChatRequest }>({
         mutationFn: ({ document_id, body }) => {
             return apiHelper({
-                url: `/documents/${document_id}/chat`,
+                url: `http://localhost:8000/documents/${document_id}/chat`,
                 method: "POST",
                 body: body,
             })
@@ -148,7 +148,7 @@ export const useRateUnderstanding = () => {
     return useMutation<UnderstandingResponse, Error, { summary_id: string, body: UnderstandingRequest }>({
         mutationFn: ({ summary_id, body }) => {
             return apiHelper({
-                url: `/summaries/${summary_id}/understanding`,
+                url: `http://localhost:8000/summaries/${summary_id}/understanding`,
                 method: "POST",
                 body: body,
             })

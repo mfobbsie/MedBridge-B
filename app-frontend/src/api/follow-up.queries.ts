@@ -7,7 +7,7 @@ export const useListFollowUp = (document_id: string) => {
         queryKey: ["documents", document_id, "follow-ups"],
         queryFn: () => {
             return apiHelper({
-                url: `/documents/${document_id}/follow-ups`,
+                url: `http://localhost:8000/documents/${document_id}/follow-ups`,
                 method: "GET",
                 body: null
             })
@@ -21,7 +21,7 @@ export const useCreateFollowUp = () => {
     return useMutation<FollowUpResponse, Error, { document_id: string, body: FollowUpCreate }>({
         mutationFn: ({ document_id, body }) => {
             return apiHelper({
-                url: `/documents/${document_id}/follow-ups`,
+                url: `http://localhost:8000/documents/${document_id}/follow-ups`,
                 method: "POST",
                 body: body
             })
@@ -43,7 +43,7 @@ export const useUpdateFollowUp = () => {
     return useMutation<FollowUpResponse, Error, { followup_id: string, body: FollowUpUpdate }>({
         mutationFn: ({ followup_id, body }) => {
             return apiHelper({
-                url: `/follow-ups/${followup_id}`,
+                url: `http://localhost:8000/follow-ups/${followup_id}`,
                 method: "PATCH",
                 body: body
             })
@@ -65,7 +65,7 @@ export const useDeleteFollowUp = () => {
     return useMutation<void, Error, string>({
         mutationFn: (followup_id: string) => {
             return apiHelper({
-                url: `/follow-ups/${followup_id}`,
+                url: `http://localhost:8000/follow-ups/${followup_id}`,
                 method: "DELETE",
                 body: null
             })
@@ -87,7 +87,7 @@ export const useCompleteFollowUp = () => {
     return useMutation<void, Error, string>({
         mutationFn: (followup_id: string) => {
             return apiHelper({
-                url: `/follow-ups/${followup_id}/complete`,
+                url: `http://localhost:8000/follow-ups/${followup_id}/complete`,
                 method: "POST",
                 body: null
             })
