@@ -18,7 +18,8 @@ export const ApiSandbox = () => {
     const { mutate: completeReminder } = useCompleteReminder();
 
 
-    const targetId = reminders?.[0]?.reminder_id || "";
+    const targetId = reminders?.[0]?.id || "";
+    console.log(targetId);
 
 
     { if (isLoading) return <LoadingSpinner /> }
@@ -36,7 +37,7 @@ export const ApiSandbox = () => {
 
             <button onClick={() => createReminder({
                 title: "Sandbox Test Reminder",
-                reminder_type: "Medication",
+                reminder_type: "medication",
                 remind_at: new Date().toISOString(),
             })}> + Create Reminder
             </button>
