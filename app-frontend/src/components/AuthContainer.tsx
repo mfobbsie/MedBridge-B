@@ -1,7 +1,6 @@
 import { FormFactory } from "./FormFactory";
 import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
-import { useLogout } from "../api/auth.queries";
 import { useNavigate } from "react-router-dom"; 
 
 type AuthOption = "login" | "registration";
@@ -9,7 +8,6 @@ type AuthOption = "login" | "registration";
 export const AuthContainer = (): JSX.Element => {
   const [authOption, setAuthOption] = useState<AuthOption>("login");
   const { token } = useAuth();
-  const logoutMutation = useLogout();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -23,10 +21,7 @@ export const AuthContainer = (): JSX.Element => {
   if (token) {
     return (
       <div className="auth-success">
-        <h1 className="auth-success-title">You’re already signed in</h1>
-        <button className="logout-btn" onClick={() => logoutMutation.mutate()}>
-          Logout
-        </button>
+        <h1 className="auth-success-title">You’re signed in</h1>
       </div>
     );
   }
