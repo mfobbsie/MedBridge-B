@@ -1,11 +1,11 @@
-from pydantic_settings import BaseSettings
+﻿from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = ConfigDict(env_file=(".env", "../.env"), env_file_encoding="utf-8", extra="ignore")
 
     supabase_url: str = ""
     supabase_anon_key: str = ""
@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     secret_key: str = "dev-secret-key-change-in-production"
     max_file_size_mb: int = 10
-    allowed_origins: str = "http://localhost:3000, http://localhost:5173"
+    allowed_origins: str = "http://localhost:3000, http://localhost:5173, http://localhost:8000"
     ocr_confidence_threshold: int = 60
     tesseract_cmd: str = "tesseract"
     chunk_size_tokens: int = 500

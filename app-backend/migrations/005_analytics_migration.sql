@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS summary_feedback (
 
 ALTER TABLE summary_feedback ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "Users manage own summary feedback"
+DROP POLICY IF EXISTS "Users manage own summary feedback" ON summary_feedback;
+CREATE POLICY "Users manage own summary feedback"
     ON summary_feedback
     FOR ALL
     USING (auth.uid() = user_id)

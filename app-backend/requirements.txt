@@ -1,4 +1,4 @@
-fastapi
+﻿fastapi
 uvicorn[standard]
 pydantic
 pydantic-settings
@@ -9,17 +9,13 @@ pytest-timeout
 httpx
 supabase
 psycopg2-binary
-httpx
-psycopg2-binary
 pdfplumber
 groq
-python-dotenv
-pydantic-settings
 email-validator
-supabase
 tenacity
 tiktoken
 pymupdf
 pytesseract
 pillow
 python-multipart
+textstat

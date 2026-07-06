@@ -9,6 +9,7 @@ class DocumentStatus(str, Enum):
     PROCESSING = "processing"
     EXTRACTED = "extracted"
     SUMMARIZED = "summarized"
+    READY = "ready"
     FAILED = "failed"
 
 

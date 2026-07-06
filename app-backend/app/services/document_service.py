@@ -45,14 +45,24 @@ def _normalize(row: dict) -> dict:
         return row
     if "id" in row and "document_id" not in row:
         row["document_id"] = row.pop("id")
-    if "filename" in row:
+    if row.get("filename"):
         row["file_name"] = row.pop("filename")
+    elif "display_name" in row and row["display_name"]:
+        row["file_name"] = row["display_name"]
+    elif "file_name" not in row:
+        row["file_name"] = "Unknown document"
     if "storage_path" in row:
         row["file_path"] = row.pop("storage_path")
     if "raw_text" in row:
         row["extracted_text"] = row.pop("raw_text")
-    if "file_type" in row:
+    if row.get("file_type"):
         row["mime_type"] = row.pop("file_type")
+    elif "mime_type" not in row:
+        row["mime_type"] = row.get("source_type") or "application/octet-stream"
+    if row.get("file_size_bytes") is None:
+        row["file_size_bytes"] = 0
+    if "created_at" in row and "uploaded_at" not in row:
+        row["uploaded_at"] = row["created_at"]
     return row
 
 
