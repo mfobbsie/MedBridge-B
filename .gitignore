@@ -3,13 +3,14 @@
 *.env
 .env.*
 !.env.example
+!**/.env.example
 *.local
+*.pem
+*.key
+credentials.json
+service-account*.json
 
-# === GLOBAL WILDCARDS ===
-**/node_modules/
-**/dist/
-**/dist-ssr/
-**/build/
+# === PYTHON ===
 **/.venv/
 **/venv/
 **/env/
@@ -19,21 +20,40 @@
 **/*.pyd
 **/*.egg-info/
 
-# === SYNTHEA OUTPUT ===
+# === PYTHON TEST / LINT CACHES ===
+**/.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# === NODE / FRONTEND ===
+**/node_modules/
+**/dist/
+**/dist-ssr/
+**/build/
+
+# === FRONTEND CACHES ===
+*.tsbuildinfo
+.vite/
+vite.config.ts.timestamp-*
+
+# === SYNTHEA / DATABASE ===
 **/output/
 *.jar
-
-# === DATABASE ===
+app-backend/seed/synthea/synthea-with-dependencies.jar
 *.db
 *.sqlite
 
 # === IDE & OS ===
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
 .DS_Store
 Thumbs.db
+ehthumbs.db
 desktop.ini
 
 # === LOGS ===
@@ -41,9 +61,3 @@ desktop.ini
 **/logs/
 *debug.log*
 *error.log*
-
-# === LOCAL DB SCRIPTS (not tracked) ===
-app-backend/scripts/reset_db.sql
-app-backend/scripts/setup_db.sql
-app-backend/seed/synthea/synthea-with-dependencies.jar
-app-backend/seed/synthea/synthea-with-dependencies.jardata
