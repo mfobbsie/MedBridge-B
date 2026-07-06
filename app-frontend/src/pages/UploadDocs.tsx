@@ -1,5 +1,6 @@
 // src/pages/UploadDocs.tsx
 import type { ReactNode } from "react";
+import "../main.css";
 
 export const UploadDocs = (): ReactNode => {
   return (
