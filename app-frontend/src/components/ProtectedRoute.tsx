@@ -14,7 +14,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     if (isLoading) return <LoadingSpinner />
 
     if (!token) {
-        return <Navigate to="/login" replace />
+        return <Navigate to="/" replace />
     }
 
     return children ? <>{children}</> : <Outlet />
