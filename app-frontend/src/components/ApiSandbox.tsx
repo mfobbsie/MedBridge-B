@@ -5,6 +5,7 @@ import {
     useDeleteReminder,
     useUpdateReminder
 } from "../api/reminders.queries"
+import { EmptyState } from "./EmptyState";
 import { LoadingSpinner } from "./LoadingSpinner";
 
 
@@ -26,47 +27,47 @@ export const ApiSandbox = () => {
 
     { if (isError) return <h1> Error has occured. </h1> }
 
-    { if (reminders?.length === 0) return <h1>No reminders.</h1> }
+    {
+        if (reminders?.length === 0) return <EmptyState data={reminders} />
+
+        return (
+            <>
+                <pre>
+                    {JSON.stringify(reminders, null, 2)}
+                </pre>
+
+                <button onClick={() => createReminder({
+                    title: "Sandbox Test Reminder",
+                    reminder_type: "medication",
+                    remind_at: new Date().toISOString(),
+                })}> + Create Reminder
+                </button>
 
 
-    return (
-        <>
-            <pre>
-                {JSON.stringify(reminders, null, 2)}
-            </pre>
-
-            <button onClick={() => createReminder({
-                title: "Sandbox Test Reminder",
-                reminder_type: "medication",
-                remind_at: new Date().toISOString(),
-            })}> + Create Reminder
-            </button>
-
-
-            <button onClick={() => updateReminder({
-                reminder_id: targetId,
-                body: { title: "updated Sandbox Title!" }
-            })}
-                disabled={!targetId}> ✏️ Update Reminder
-            </button>
+                <button onClick={() => updateReminder({
+                    reminder_id: targetId,
+                    body: { title: "updated Sandbox Title!" }
+                })}
+                    disabled={!targetId}> ✏️ Update Reminder
+                </button>
 
 
 
-            <button onClick={() => completeReminder(targetId)}
-                disabled={!targetId}>
-                ✅ Complete Reminder
-            </button>
+                <button onClick={() => completeReminder(targetId)}
+                    disabled={!targetId}>
+                    ✅ Complete Reminder
+                </button>
 
 
-            <button onClick={() => deleteReminder(targetId)}
-                disabled={!targetId}>
-                🗑️ Delete Reminder
-            </button>
+                <button onClick={() => deleteReminder(targetId)}
+                    disabled={!targetId}>
+                    🗑️ Delete Reminder
+                </button>
 
-        </>
+            </>
 
-    )
+        )
 
-
+    }
 
 }
