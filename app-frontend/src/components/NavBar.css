@@ -5,6 +5,7 @@
   justify-content: space-between;
   padding: 12px 24px;
   background-color: #F7FAFC;
+  position: relative;
 }
 
 .nav-left {
@@ -84,8 +85,8 @@
 .mobile-menu {
   position: absolute;
   top: 72px;
+  left: 0;
   right: 0;
-  width: 100%;
   background-color: #F7FAFC;
   display: flex;
   flex-direction: column;

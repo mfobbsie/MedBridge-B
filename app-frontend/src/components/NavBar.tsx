@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
 import { useLogout } from "../api/auth.queries";
 import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./NavBar.css";
 
 export const NavBar = (): ReactNode => {
@@ -11,6 +11,18 @@ export const NavBar = (): ReactNode => {
   const logoutMutation = useLogout();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768 && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isOpen]);
+
 
   const handleLogout = () => {
     logoutMutation.mutate();
@@ -23,7 +35,7 @@ export const NavBar = (): ReactNode => {
         <img src="/logo.png" alt="MedBridge logo" className="nav-logo" />
       </div>
 
-      <div className="nav-right">
+      <div className="nav-right desktop-nav">
         <NavLink
           to="/dashboard"
           className={({ isActive }) =>
