@@ -1,11 +1,11 @@
-from pydantic_settings import BaseSettings
+﻿from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
+    model_config = ConfigDict(env_file=(".env", "../.env"), env_file_encoding="utf-8", extra="ignore")
 
     supabase_url: str = ""
     supabase_anon_key: str = ""

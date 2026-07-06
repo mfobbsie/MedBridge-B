@@ -667,7 +667,7 @@
   <div class="page-header">
     <div class="sprint-tag">Sprint 1 · Deliverable 1 of 4</div>
     <h1>Entity Relationship Diagram</h1>
-    <p>Reflects the actual Supabase schema as built — 16 tables across 4 migrations (001–004) plus ALTER TABLE additions. Table names and columns match what's live in the database.</p>
+    <p>Reflects the actual Supabase schema as built — 15 tables across 4 migrations (001–004) plus ALTER TABLE additions. Table names and columns match what's live in the database.</p>
   </div>
 
   <div class="erd-legend card" style="box-shadow:none; margin-bottom:18px;">
@@ -969,22 +969,6 @@
       </div>
     </div>
   </div>
-
-
-    <div class="erd-entity" style="border-color:var(--purple);">
-      <div class="erd-entity-header" style="background:var(--purple-dim, #f3e8ff);">
-        <span class="icon">⚙️</span> user_settings
-        <span style="font-size:10px;color:var(--text-3);font-weight:400;margin-left:auto;">Sprint 2 · profile wireframe</span>
-      </div>
-      <div class="erd-entity-body">
-        <div class="erd-field"><span class="field-key pk">PK</span><span class="field-name">id</span><span class="field-type">uuid</span></div>
-        <div class="erd-field"><span class="field-key fk">FK</span><span class="field-name">user_id</span><span class="field-type">→ auth.users.id</span></div>
-        <div class="erd-field"><span class="field-key" style="min-width:26px;"></span><span class="field-name">allow_trusted_contacts</span><span class="field-type">boolean</span></div>
-        <div class="erd-field"><span class="field-key" style="min-width:26px;"></span><span class="field-name">allow_mychart_integration</span><span class="field-type">boolean</span></div>
-        <div class="erd-field"><span class="field-key" style="min-width:26px;"></span><span class="field-name">enable_reminders</span><span class="field-type">boolean</span></div>
-        <div class="erd-field"><span class="field-key" style="min-width:26px;"></span><span class="field-name">updated_at</span><span class="field-type">timestamptz</span></div>
-      </div>
-    </div>
 
   <!-- Relationships table -->
   <div class="erd-rel-section">

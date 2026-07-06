@@ -41,3 +41,9 @@ desktop.ini
 **/logs/
 *debug.log*
 *error.log*
+
+# === LOCAL DB SCRIPTS (not tracked) ===
+app-backend/scripts/reset_db.sql
+app-backend/scripts/setup_db.sql
+app-backend/seed/synthea/synthea-with-dependencies.jar
+app-backend/seed/synthea/synthea-with-dependencies.jardata

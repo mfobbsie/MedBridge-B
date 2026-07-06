@@ -3,6 +3,7 @@ export const DocumentStatus = {
   PROCESSING: "processing",
   EXTRACTED: "extracted",
   SUMMARIZED: "summarized",
+  READY: "ready",
   FAILED: "failed"
 } as const;
 

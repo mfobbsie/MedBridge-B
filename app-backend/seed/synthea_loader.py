@@ -1,4 +1,4 @@
-"""
+﻿"""
 medbridge-db/seed/synthea_loader.py
 
 Loads a Synthea-generated FHIR R4 bundle into the MedBridge normalized schema.
@@ -21,36 +21,46 @@ Output is in:     output/fhir/*.json (each file is one patient bundle)
 
 import argparse
 import json
-import os
+import sys
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-import psycopg2
-import psycopg2.extras
 from dotenv import load_dotenv
 
-load_dotenv()
+# Allow `from app...` when run as `python seed/synthea_loader.py`
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+_backend_root = Path(__file__).resolve().parents[1]
+load_dotenv(_backend_root / ".env")
+load_dotenv(_backend_root.parent / ".env")
 
 # ---------------------------------------------------------------------------
 # DB connection
 # ---------------------------------------------------------------------------
-def get_conn():
-    """Connect using the Supabase direct Postgres connection string.
-    Format: postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres
-    Set DATABASE_URL in your .env file."""
-    url = os.environ.get("DATABASE_URL")
-    if not url:
-        raise EnvironmentError(
-            "DATABASE_URL not set. Add it to .env:\n"
-            "DATABASE_URL=postgresql://postgres:[password]@db.[ref].supabase.co:5432/postgres"
-        )
-    return psycopg2.connect(url, cursor_factory=psycopg2.extras.RealDictCursor)
+def get_supabase_client():
+    """Service-role Supabase client (bypasses RLS). Used when direct Postgres is unreachable."""
+    from app.database import get_supabase
+    return get_supabase()
+
+
+def _serialize_row(row: dict) -> dict:
+    """Convert values for Supabase REST insert (e.g. datetime â†’ ISO string)."""
+    allowed_flags = {"normal", "low", "high", "critical"}
+    out = {}
+    for key, value in row.items():
+        if key == "flag" and value not in allowed_flags:
+            value = None
+        if isinstance(value, datetime):
+            out[key] = value.isoformat()
+        else:
+            out[key] = value
+    return out
 
 
 # ---------------------------------------------------------------------------
-# FHIR helpers — defensive accessors, never crash on missing fields
+# FHIR helpers â€” defensive accessors, never crash on missing fields
 # ---------------------------------------------------------------------------
 def coding_first(codeable_concept: dict, field="coding") -> dict:
     """Return the first coding entry from a CodeableConcept, or {}."""
@@ -113,7 +123,6 @@ def parse_condition(res: dict, health_record_id: str, user_id: str) -> Optional[
         "status": status,
         "onset_date": parse_date(res.get("onsetDateTime") or
                                   res.get("onsetPeriod", {}).get("start")),
-        "note": None,
     }
 
 
@@ -140,8 +149,6 @@ def parse_medication_request(res: dict, health_record_id: str, user_id: str) -> 
     status_map = {"active": "active", "stopped": "stopped",
                   "completed": "stopped", "on-hold": "on-hold"}
 
-    valid_period = (res.get("dispenseRequest") or {}).get("validityPeriod", {})
-
     return {
         "id": str(uuid.uuid4()),
         "health_record_id": health_record_id,
@@ -151,10 +158,7 @@ def parse_medication_request(res: dict, health_record_id: str, user_id: str) -> 
         "code_system": _friendly_system(coding.get("system")),
         "dose": dose or None,
         "frequency": frequency,
-        "route": text_or_display(dosage.get("route")),
         "status": status_map.get(fhir_status, "unknown"),
-        "start_date": parse_date(valid_period.get("start")),
-        "end_date": parse_date(valid_period.get("end")),
     }
 
 
@@ -174,7 +178,7 @@ def parse_observation(res: dict, health_record_id: str, user_id: str) -> Optiona
     if not name:
         return None
 
-    # Value — FHIR uses valueQuantity, valueString, valueCodeableConcept, etc.
+    # Value â€” FHIR uses valueQuantity, valueString, valueCodeableConcept, etc.
     value_quantity = None
     value_text = None
     unit = None
@@ -209,6 +213,9 @@ def parse_observation(res: dict, health_record_id: str, user_id: str) -> Optiona
             flag = "high"
         elif rr_low is not None and rr_high is not None:
             flag = "normal"
+
+    if flag == "unknown":
+        flag = None
 
     effective = res.get("effectiveDateTime") or \
                 (res.get("effectivePeriod") or {}).get("start")
@@ -323,7 +330,7 @@ TABLES = {
 }
 
 
-def load_bundle(bundle_path: Path, user_id: str, conn) -> dict:
+def load_bundle(bundle_path: Path, user_id: str, supabase) -> dict:
     """Parse one Synthea FHIR bundle and insert into the normalized schema.
     Returns a summary dict of counts."""
     with open(bundle_path, encoding='utf-8', errors='replace') as f:
@@ -331,7 +338,7 @@ def load_bundle(bundle_path: Path, user_id: str, conn) -> dict:
 
     entries = bundle.get("entry", [])
     if not entries:
-        print(f"  WARNING: {bundle_path.name} has no entries — skipping.")
+        print(f"  WARNING: {bundle_path.name} has no entries â€” skipping.")
         return {}
 
     # Extract Patient name for display_name
@@ -349,39 +356,31 @@ def load_bundle(bundle_path: Path, user_id: str, conn) -> dict:
 
     counts = {rt: 0 for rt in PARSERS}
 
-    with conn.cursor() as cur:
-        # Create the health_record for this bundle
-        hr_id = str(uuid.uuid4())
-        cur.execute(
-            """
-            INSERT INTO health_records
-              (id, user_id, source_type, display_name, status)
-            VALUES (%s, %s, 'synthea', %s, 'ready')
-            """,
-            (hr_id, user_id, f"Synthetic patient — {patient_name}")
-        )
+    # Create the health_record for this bundle
+    hr_id = str(uuid.uuid4())
+    supabase.table("health_records").insert({
+        "id": hr_id,
+        "user_id": user_id,
+        "source_type": "synthea",
+        "display_name": f"Synthetic patient â€” {patient_name}",
+        "status": "ready",
+    }).execute()
 
-        # Parse and insert each resource
-        for entry in entries:
-            res = entry.get("resource", {})
-            rt = res.get("resourceType")
-            if rt not in PARSERS:
-                continue
+    # Parse and insert each resource
+    for entry in entries:
+        res = entry.get("resource", {})
+        rt = res.get("resourceType")
+        if rt not in PARSERS:
+            continue
 
-            row = PARSERS[rt](res, hr_id, user_id)
-            if row is None:
-                continue
+        row = PARSERS[rt](res, hr_id, user_id)
+        if row is None:
+            continue
 
-            table = TABLES[rt]
-            cols = list(row.keys())
-            placeholders = ["%s"] * len(cols)
-            cur.execute(
-                f"INSERT INTO {table} ({', '.join(cols)}) VALUES ({', '.join(placeholders)})",
-                [row[c] for c in cols]
-            )
-            counts[rt] += 1
+        table = TABLES[rt]
+        supabase.table(table).insert(_serialize_row(row)).execute()
+        counts[rt] += 1
 
-    conn.commit()
     return {"health_record_id": hr_id, "patient_name": patient_name, "counts": counts}
 
 
@@ -403,8 +402,8 @@ def main():
         help="Directory of Synthea FHIR bundle JSON files (loads all *.json).")
     args = parser.parse_args()
 
-    conn = get_conn()
-    print(f"Connected to DB. Loading records for user {args.user_id}\n")
+    supabase = get_supabase_client()
+    print(f"Connected to Supabase. Loading records for user {args.user_id}\n")
 
     bundles = [args.bundle] if args.bundle else sorted(args.dir.glob("*.json"))
     if not bundles:
@@ -412,18 +411,18 @@ def main():
         return
 
     total_counts = {rt: 0 for rt in PARSERS}
+    loaded = 0
     for bundle_path in bundles:
         print(f"Loading {bundle_path.name}...")
         try:
-            conn = get_conn()
-            result = load_bundle(bundle_path, args.user_id, conn)
-            conn.close()
+            result = load_bundle(bundle_path, args.user_id, supabase)
         except Exception as e:
-            print(f"  WARNING: skipped {bundle_path.name} — {e}")
+            print(f"  WARNING: skipped {bundle_path.name} â€” {e}")
             continue
         if result:
+            loaded += 1
             c = result["counts"]
-            print(f"  ✓ {result['patient_name']} (health_record: {result['health_record_id']})")
+            print(f"  OK {result['patient_name']} (health_record: {result['health_record_id']})")
             print(f"    conditions={c['Condition']} medications={c['MedicationRequest']} "
                   f"labs={c['Observation']} encounters={c['Encounter']} "
                   f"allergies={c['AllergyIntolerance']}")
@@ -431,25 +430,12 @@ def main():
                 total_counts[rt] += c[rt]
 
     print(f"\n{'='*50}")
-    print(f"Done. Loaded {len(bundles)} bundle(s).")
+    print(f"Done. Loaded {loaded} bundle(s).")
     print(f"Total: conditions={total_counts['Condition']} "
           f"medications={total_counts['MedicationRequest']} "
           f"labs={total_counts['Observation']} "
           f"encounters={total_counts['Encounter']} "
           f"allergies={total_counts['AllergyIntolerance']}")
-
-
-if __name__ == "__main__":
-    main()
-
-    print(f"\n{'='*50}")
-    print(f"Done. Loaded {len(bundles)} bundle(s).")
-    print(f"Total: conditions={total_counts['Condition']} "
-          f"medications={total_counts['MedicationRequest']} "
-          f"labs={total_counts['Observation']} "
-          f"encounters={total_counts['Encounter']} "
-          f"allergies={total_counts['AllergyIntolerance']}")
-    conn.close()
 
 
 if __name__ == "__main__":
