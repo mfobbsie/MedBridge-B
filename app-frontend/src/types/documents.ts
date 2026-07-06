@@ -30,7 +30,7 @@ export interface DocumentListResponse {
 export interface UploadResponse {
     document_id: string;
     status: DocumentStatus;
-    message: string;
+    message?: string;
 }
 
 export interface SummaryResponse {
@@ -89,7 +89,7 @@ export interface PrepResponse {
 
 
 
-export interface UnderstadingResponse {
+export interface UnderstandingResponse {
     id: string;
     summary_id: string;
     rating: string;
@@ -152,24 +152,6 @@ export interface ErrorEnvelope {
 
 
 
-
-//! Duplicate interface in feature file:
-
-export interface ReminderCreate {
-    title: string;
-    due_date?: string;
-    notes?: string;
-}
-
-export interface ReminderResponse {
-    reminder_id: string;
-    user_id: string;
-    document_id?: string;
-    title: string;
-    due_date?: string;
-    notes?: string;
-    created_at: string;
-}
 
 
 

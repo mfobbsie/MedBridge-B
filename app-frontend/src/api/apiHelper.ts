@@ -1,5 +1,5 @@
 
-export interface ApiCall<T = unknown> {
+export interface apiHelper<T = unknown> {
     url: string;
     method: 'POST' | 'GET' | 'DELETE' | 'PATCH' | "HEAD";
     body: T
@@ -37,7 +37,7 @@ export const clearAuthCookie = (): void => {
 
 
 
-export const apiCall = async ({ url, method, body }: ApiCall) => {
+export const apiHelper = async ({ url, method, body }: apiHelper) => {
     try {
 
         const token = getAuthCookie();

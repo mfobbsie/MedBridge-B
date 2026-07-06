@@ -1,11 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { LoginRequest, AuthResponse, RegisterRequest } from "../types/auth";
 import { useAuth } from "../context/AuthContext";
-import { apiCall } from "./apiHelper";
+import { apiHelper } from "./apiHelper";
 
 async function loginUser(credentials: LoginRequest): Promise<AuthResponse> {
 
-    return apiCall({
+    return apiHelper({
         url: "http://localhost:8000/auth/login",
         method: "POST",
         body: credentials
@@ -34,7 +34,7 @@ export function useLogin() {
 
 async function registerUser(credentials: RegisterRequest): Promise<AuthResponse> {
 
-    return apiCall({
+    return apiHelper({
         url: "http://localhost:8000/auth/register",
         method: "POST",
         body: credentials
@@ -62,7 +62,7 @@ export function useRegister() {
 
 
 export const logoutUser = (): Promise<null> => {
-    return apiCall({
+    return apiHelper({
         url: "http://localhost:8000/auth/logout",
         method: "POST",
         body: null
