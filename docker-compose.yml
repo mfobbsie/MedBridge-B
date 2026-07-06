@@ -1,13 +1,13 @@
-services:
+﻿services:
 
   backend:
-    build: .
+    build: ./app-backend
     ports: 
       - "8000:8000"
     env_file: .env
 
   frontend:
-    build: ./app-frontend
+    build: ./app-backend/app-frontend
     ports: 
       - "5173:5173"
     depends_on: 

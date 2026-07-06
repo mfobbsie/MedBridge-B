@@ -2,6 +2,7 @@
 
 ## 1. Create virtual environment
 
+cd app-backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 
@@ -11,7 +12,7 @@ pip install -r requirements.txt
 
 ## 3. Create environment file
 
-copy .env.example .env
+copy ..\.env.example .env
 
 Fill in the credentials provided privately.
 
@@ -73,14 +74,14 @@ These go in your .env file. NEVER commit them to GitHub.
 
 Windows PowerShell:
 git clone https://github.com/Coding-Temple-Tech-Residency/MedBridge-B.git
-cd MedBridge-B
+cd MedBridge-B/app-backend
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 
 Mac/Linux:
 git clone https://github.com/Coding-Temple-Tech-Residency/MedBridge-B.git
-cd MedBridge-B
+cd MedBridge-B/app-backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -90,10 +91,10 @@ pip install -r requirements.txt
 ## Step 3: Configure environment
 
 Windows:
-Copy-Item .env.example .env
+Copy-Item ..\.env.example .env
 
 Mac/Linux:
-cp .env.example .env
+cp ../.env.example .env
 
 Fill in the values Kathy shared with you via DM.
 
@@ -103,7 +104,7 @@ Fill in the values Kathy shared with you via DM.
 
 You do NOT need Python or the database to start building.
 
-Check sample_responses/api_responses.json for the current API
+Check app-backend/sample_responses/api_responses.json for the current API
 response shapes. Note these are placeholders until real Synthea
 and Epic data is loaded — shapes may change slightly.
 
@@ -114,7 +115,7 @@ Auth header required: Authorization: Bearer <supabase_jwt>
 
 ## For backend developers
 
-The FastAPI app will live in app/. Sprint 1 endpoints:
+The FastAPI app lives in app-backend/app/. Sprint 1 endpoints:
 
 POST /documents Upload PDF
 GET /documents List user records

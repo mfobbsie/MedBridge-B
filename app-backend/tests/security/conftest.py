@@ -1,4 +1,4 @@
-"""
+﻿"""
 Shared fixtures and helpers for security integration tests.
 
 Requires a running FastAPI server and Supabase test credentials.
@@ -12,7 +12,9 @@ import httpx
 import pytest
 from dotenv import load_dotenv
 
-load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+_backend_root = Path(__file__).resolve().parents[2]
+load_dotenv(_backend_root / ".env")
+load_dotenv(_backend_root.parent / ".env")
 
 BASE_URL = os.getenv("TEST_BASE_URL", "http://localhost:8000")
 

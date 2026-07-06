@@ -21,36 +21,38 @@ MedBridge helps patients understand their health records through AI-powered summ
 ## Setup & Documentation
 
 - **Clone:** `git clone https://github.com/Coding-Temple-Tech-Residency/MedBridge-B.git`
-- **Setup guide:** See [TEAMMATE_SETUP.md](TEAMMATE_SETUP.md)
+- **Setup guide:** See [docs/TEAMMATE_SETUP.md](docs/TEAMMATE_SETUP.md)
 - **Environment variables:** Copy `.env.example` to `.env` and fill in Supabase + Groq credentials (never commit `.env`)
-- **API documentation:** Run `uvicorn app.main:app --reload` and open `http://localhost:8000/docs`, or see [FRONTEND_API.md](FRONTEND_API.md)
-- **Postman:** Import `postman/MedBridge-API.postman_collection.json` and `postman/MedBridge-Local.postman_environment.json`
-- **Migrations:** Run SQL files in `migrations/` in order (001 through 006) in the Supabase SQL Editor
+- **API documentation:** Run `cd app-backend && uvicorn app.main:app --reload` and open `http://localhost:8000/docs`, or see [docs/FRONTEND_API.md](docs/FRONTEND_API.md)
+- **Postman:** Import `app-backend/postman/MedBridge-API.postman_collection.json` and `app-backend/postman/MedBridge-Local.postman_environment.json`
+- **Migrations:** Run SQL files in `app-backend/migrations/` in order (001 through 008; note two files share the `006` prefix: `006_user_settings.sql` and `006_app_events.sql`) in the Supabase SQL Editor
 - **Deployment:** Render (free tier) — link TBD
 
 ## Project Structure
 
     MedBridge-B/
-      migrations/           SQL schema migrations (run in order)
-      seed/                 Synthea synthetic data loader
-      data/                 FHIR mapper, data inspector, verifier
-      fhir_oauth_spike/     SMART on FHIR OAuth proof of concept
-      app/                  FastAPI application
-      postman/              API collection for local testing
-      tests/                Unit, integration, and security tests
+      app-backend/          Backend API, tests, migrations, and tooling
+        app/                FastAPI application package
+        migrations/         SQL schema migrations (run in order)
+        tests/              Unit, integration, and security tests
+        seed/               Synthea synthetic data loader
+        data/               FHIR mapper, data inspector, verifier
+        postman/            API collection for local testing
+      app-frontend/         React frontend
+      docs/                 Setup guides and API documentation
 
 ## Running integration tests
 
 Integration and security tests call a live FastAPI server against a real Supabase test project.
 
-1. Start the server: `uvicorn app.main:app --reload`
+1. Start the server: `cd app-backend && uvicorn app.main:app --reload`
 2. Point `.env` at a **test** Supabase project (not production)
 3. Create test users (one-time):
    - `POST /auth/register` with the emails/passwords from `.env.example` (`TEST_USER_A_*`, `TEST_USER_B_*`), or
    - create users in the Supabase Auth dashboard
 4. Create the Supabase Storage bucket `medical-documents` (private) in the Storage dashboard
 5. If Supabase requires email confirmation, disable it for the test project or confirm users manually — otherwise login returns 401
-6. Run: `pytest tests/integration/ -v --timeout=60`
+6. Run: `cd app-backend && pytest tests/integration/ -v --timeout=60`
 
 If POST routes return 500 after pulling code changes, restart the server so middleware updates are loaded.
 
@@ -70,7 +72,7 @@ If POST routes return 500 after pulling code changes, restart the server so midd
 ## Notes
 
 - Synthea synthetic data and Epic FHIR sandbox connection are in progress.
-- `sample_responses/api_responses.json` contains placeholder shapes; real data loading may adjust response fields slightly.
+- `app-backend/sample_responses/api_responses.json` contains placeholder shapes; real data loading may adjust response fields slightly.
 - Two migration files share the `006` prefix: run `006_user_settings.sql` and `006_app_events.sql` after 005.
 - Backend server-side operations require `SUPABASE_SERVICE_ROLE_KEY` in `.env` (server only — never expose to frontend).
 
