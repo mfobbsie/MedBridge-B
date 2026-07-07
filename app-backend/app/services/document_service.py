@@ -229,10 +229,10 @@ def get_document(document_id: str, user_id: str) -> Optional[dict]:
         .select("*")
         .eq("id", document_id)
         .eq("user_id", user_id)
-        .single()
+        .maybe_single()
         .execute()
     )
-    return _normalize(result.data) if result.data else None
+    return _normalize(result.data) if result else None
 
 
 def get_documents(user_id: str) -> list[dict]:
