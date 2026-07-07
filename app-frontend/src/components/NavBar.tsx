@@ -111,6 +111,8 @@ export const NavBar = (): ReactNode => {
               onClick={() => {
                 handleLogout();
                 setIsOpen(false);
+                
+                move "setIsOpen(false)" as part of the handleLogout function above that way you only have to pass handleLogout() instead of handleLogout and setIsOpen(false)
               }}
             >
               Logout
