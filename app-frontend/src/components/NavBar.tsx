@@ -26,6 +26,7 @@ export const NavBar = (): ReactNode => {
 
   const handleLogout = () => {
     logoutMutation.mutate();
+        setIsOpen(false); // Close the mobile menu on logout
         navigate("/");
       };
 
@@ -110,7 +111,6 @@ export const NavBar = (): ReactNode => {
               className="mobile-item logout-link"
               onClick={() => {
                 handleLogout();
-                setIsOpen(false);
               }}
             >
               Logout
