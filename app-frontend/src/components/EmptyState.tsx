@@ -3,6 +3,7 @@ export interface EmptyStateProps {
     title: string;
     description: string;
     icon?: string;
+    onAction?: () => void
 }
 
 
