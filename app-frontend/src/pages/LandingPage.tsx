@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import './LandingPage.css'
 
 export const LandingPage = (): ReactNode => {
   return (
