@@ -138,7 +138,7 @@ def upload_document(
             "user_id": user_id,
             "filename": filename,
             "storage_path": file_path,
-            "file_type": mime_type,
+            "file_type":  file_extension,
             "file_size_bytes": len(file_bytes),
             "source_type": "upload",
             "status": "uploaded",
