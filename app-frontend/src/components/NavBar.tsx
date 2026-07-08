@@ -14,7 +14,6 @@ export const NavBar = (): ReactNode => {
       }
     };
 
-    window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [isOpen]);
 
