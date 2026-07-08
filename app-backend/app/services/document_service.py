@@ -45,14 +45,24 @@ def _normalize(row: dict) -> dict:
         return row
     if "id" in row and "document_id" not in row:
         row["document_id"] = row.pop("id")
-    if "filename" in row:
+    if row.get("filename"):
         row["file_name"] = row.pop("filename")
+    elif "display_name" in row and row["display_name"]:
+        row["file_name"] = row["display_name"]
+    elif "file_name" not in row:
+        row["file_name"] = "Unknown document"
     if "storage_path" in row:
         row["file_path"] = row.pop("storage_path")
     if "raw_text" in row:
         row["extracted_text"] = row.pop("raw_text")
-    if "file_type" in row:
+    if row.get("file_type"):
         row["mime_type"] = row.pop("file_type")
+    elif "mime_type" not in row:
+        row["mime_type"] = row.get("source_type") or "application/octet-stream"
+    if row.get("file_size_bytes") is None:
+        row["file_size_bytes"] = 0
+    if "created_at" in row and "uploaded_at" not in row:
+        row["uploaded_at"] = row["created_at"]
     return row
 
 
@@ -120,6 +130,9 @@ def upload_document(
         logger.exception(f"Storage upload failed: {e}")
         return {"success": False, "error": "File storage failed. Please try again."}
 
+    # added to fix upload and relplace file_type mime_type to file_extension value in dictionary below. 
+    file_extension = filename.split(".")[-1].lower() if "." in filename else "unknown"
+
     # Create health_records row using ACTUAL column names
     try:
         supabase.table("health_records").insert({
@@ -127,7 +140,7 @@ def upload_document(
             "user_id": user_id,
             "filename": filename,
             "storage_path": file_path,
-            "file_type": mime_type,
+            "file_type": file_extension,
             "file_size_bytes": len(file_bytes),
             "source_type": "upload",
             "status": "uploaded",
