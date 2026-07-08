@@ -11,9 +11,6 @@ export const NavBar = (): ReactNode => {
   const logoutMutation = useLogout();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768 && isOpen) {
         setIsOpen(false);
       }
     };
