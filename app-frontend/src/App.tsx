@@ -3,6 +3,8 @@ import { AuthContainer } from "./components/AuthContainer";
 import { useModal } from "./context/ModalContext";
 import "./main.css";
 import { ApiSandbox } from "./components/ApiSandbox";
+import { UploadDocuments } from "./components/UploadDocument";
+import { UploadDocs } from "./pages/UploadDocs";
 
 export default function App(): ReactNode {
   const { openModal } = useModal();
@@ -24,7 +26,8 @@ export default function App(): ReactNode {
           🔑 Sign In
         </button>
 
-        <ApiSandbox />
+        <UploadDocs />
+        
 
 
       </main>
