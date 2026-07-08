@@ -19,8 +19,7 @@ export const UploadDocuments = () => {
         fileInputRef.current?.click();
     }
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const files = event.target.files;
+   const processFiles = (files: FileList | null) => {
         if (files && files.length > 0) {
             const selectedFile = files[0];
             const formData = new FormData();
@@ -28,6 +27,20 @@ export const UploadDocuments = () => {
             actions.uploadFile(formData);
         }
     }
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        processFiles(event.target.files);
+    }
+
+    const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+    }
+
+    const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+        event.preventDefault();
+        processFiles(event.dataTransfer.files);
+    }
+
 
     return (
 
@@ -43,6 +56,8 @@ export const UploadDocuments = () => {
 
             <div className="upload-background-container"
                 onClick={handleContainerClick}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
                 style={{ 
                     cursor: "pointer",
                     border: "2px dashed #3182ce",    
@@ -62,7 +77,7 @@ export const UploadDocuments = () => {
                     ? "⏳ Uploading..."
                     : `+ ${viewConfigs.documentLibrary.title || "Upload Document"}`}
                 </p>
-                <p>Click Here</p>
+                <p>Click or Drop Here</p>
             </div>
 
 
