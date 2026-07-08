@@ -11,7 +11,6 @@ export const NavBar = (): ReactNode => {
   const logoutMutation = useLogout();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-        setIsOpen(false);
       }
     };
 
