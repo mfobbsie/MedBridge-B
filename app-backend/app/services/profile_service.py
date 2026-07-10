@@ -19,4 +19,11 @@ def get_profile_row(supabase, user_id: str) -> dict | None:
         .maybe_single()
         .execute()
     )
-    return result.data if result else None
+    if result is None or not result.data:
+        return None
+    return result.data
+
+
+def dashboard_user(profile_row: dict | None, user_id: str, email: str) -> PatientProfileResponse:
+    row = profile_row if profile_row is not None else {"user_id": user_id}
+    return to_profile_response(row, email)
