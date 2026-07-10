@@ -2,6 +2,7 @@
 
 html, body {
   font-family: 'Didact Gothic', system-ui, -apple-system, sans-serif;
+ 
 }
 
 /*Landing Page Styles*/
@@ -17,7 +18,7 @@ html, body {
 
 .app-logo {
   width: 180px;
-  margin-top: 12px;
+  margin-top: 10px;
 }
 
 .app-header {
