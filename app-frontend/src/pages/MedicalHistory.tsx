@@ -3,14 +3,28 @@ import { useState } from "react";
 import "../main.css";
 import "./MedicalHistory.css";
 
+import { useTrustedContactsDomain } from "../hooks/useTrustedContactsDomain";
+import { useProviderDomain } from "../hooks/useProviderDomain";
+import { useDocumentsDomain } from "../hooks/useDocumentsDomain";
+import { useUserSettingsDomain } from "../hooks/useUserSettingsDomain";
+
 export const MedicalHistory = () => {
+  const user_id = "demo-user-id"; // Replace with actual user ID logic
+
+  const { data: contacts } = useTrustedContactsDomain();
+  const { data: providers } = useProviderDomain();
+  const { data: documentList } = useDocumentsDomain();
+  const { data: settings } = useUserSettingsDomain(user_id);
+  
+  
   const [activeTab, setActiveTab] = useState<
     "documents" | "charts" | "medications"
   >("documents");
 
+  
+
   return (
     <>
-
       <div className="medical-history-page">
         {/* PROFILE SIDEBAR */}
         <aside className="sidebar">
@@ -26,39 +40,54 @@ export const MedicalHistory = () => {
           </div>
 
           <div className="sidebar-section">
-            <h2>Personal Contacts</h2>
-            <p>
-              Mom: Jane Doe <br />
-              Dad: Richard Doe <br />
-              Sibling: Emily Doe
-            </p>
+            <h2>Trusted Contacts</h2>
+            {contacts?.contactsList?.length ? (
+              contacts.contactsList.map((c: any) => (
+                <p key={c.id}>
+                  {c.label}: {c.name}
+                </p>
+              ))
+            ) : (
+              <p>No trusted contacts added yet.</p>
+            )}
           </div>
 
           <div className="sidebar-section">
             <h2>Medical Contacts</h2>
-            <p>
-              Primary Care Physician: Dr. Smith <br />
-              Cardiologist: Dr. Johnson <br />
-              Dermatologist: Dr. Lee
-            </p>
+            {providers?.providersList?.length ? (
+              providers.providersList.map((p: any) => (
+                <p key={p.id}>
+                  {p.specialty}: {p.name}
+                </p>
+              ))
+            ) : (
+              <p>No providers on file.</p>
+            )}
           </div>
 
           <div className="sidebar-section">
             <h2>Data Sharing</h2>
             <p>
-              Allowed to share data with: Dr. Smith, Dr. Johnson <br />
-              Allow new contacts: Yes <br />
-              MyChart integration: Yes
+              Trusted Contacts Sharing:{" "}
+              {settings?.data?.settings?.allow_trusted_contacts ? "Yes" : "No"}
+              <br />
+              MyChart Integration:{" "}
+              {settings?.data?.settings?.allow_mychart_integration
+                ? "Enabled"
+                : "Disabled"}
+              <br />
+              Reminders:{" "}
+              {settings?.data?.settings?.enable_reminders ? "On" : "Off"}
             </p>
           </div>
 
           <div className="sidebar-section">
             <h2>General Settings</h2>
             <p>
-              Notifications: Yes <br />
-              Dark mode: No <br />
-              Language: English <br />
-              Delete account: No
+              Notifications:{" "}
+              {settings?.data?.settings?.enable_reminders ? "Yes" : "No"} <br />
+              Language: {profile?.language ?? "English"} <br />
+              Delete Account: No
             </p>
           </div>
         </aside>
@@ -99,7 +128,15 @@ export const MedicalHistory = () => {
             {activeTab === "documents" && (
               <div>
                 <h2>Uploaded Documents</h2>
-                <p>No documents uploaded yet.</p>
+                {documents?.documentList?.length ? (
+                  documents.documentList.map((doc: any) => (
+                    <p key={doc.id}>
+                      {doc.label}: {doc.name}
+                    </p>
+                  ))
+                ) : (
+                  <p>No documents uploaded yet.</p>
+                )}
               </div>
             )}
 
