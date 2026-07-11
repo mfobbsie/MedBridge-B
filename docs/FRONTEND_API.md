@@ -403,21 +403,23 @@ Completes a stub profile created at registration if one exists.
 
 ```json
 {
-  "document_id": "550e8400-e29b-41d4-a716-446655440001",
-  "status": "uploaded",
-  "message": "Document uploaded successfully. Processing has started."
+  "user": {
+    "user_id": "uuid",
+    "email": "patient@example.com",
+    "full_name": "Jane Doe",
+    "preferred_language": "en",
+    "explanation_level": "plain"
+  },
+  "profile_complete": true,
+  "documents": [],
+  "total_documents": 12,
+  "total_summaries": 8,
+  "total_questions_asked": 3
 }
 ```
 
-Processing is async — poll `GET /documents/{document_id}` until `status` is `"summarized"`.
-
-**Errors:**
-
-| Status | Body | When |
-|---|---|---|
-| 400 | `{"detail": "<validation message>"}` | Invalid file type or upload error |
-| 401 | `{"detail": "Invalid or expired token"}` | Missing or bad JWT |
-| 413 | `{"detail": "File exceeds maximum size..."}` | File too large |
+`documents` is a recent subset (maximum 5 items), while `total_documents` is
+the full count for the authenticated user.
 
 ---
 
