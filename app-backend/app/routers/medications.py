@@ -5,7 +5,8 @@ Endpoints:
   GET    /medications              — list user's medications
   GET    /medications/{id}         — get single medication
   POST   /medications              — create medication
-  PATCH  /medications/{id}         — update medication
+  PUT    /medications/{id}         — replace medication
+  PATCH  /medications/{id}         — partial update medication
   DELETE /medications/{id}         — delete medication
 """
 
@@ -41,6 +42,7 @@ def _get_owned_medication(supabase, medication_id: str, user_id: str) -> dict:
 @router.get("", response_model=list[MedicationResponse])
 async def list_medications(
     status_filter: str | None = Query(None, alias="status"),
+    is_active: bool | None = Query(None),
     user: dict = Depends(get_current_user),
 ):
     """Return all medications for the authenticated user."""
@@ -52,6 +54,8 @@ async def list_medications(
     )
     if status_filter:
         query = query.eq("status", status_filter)
+    elif is_active is not None:
+        query = query.eq("status", "active" if is_active else "stopped")
 
     result = query.order("name").execute()
     return result.data or []
@@ -74,20 +78,37 @@ async def create_medication(
 ):
     """Create a medication for the authenticated user."""
     supabase = get_supabase()
-    row = {
-        "id": str(uuid.uuid4()),
-        "user_id": user["id"],
-        "name": payload.name,
-        "code": payload.code,
-        "code_system": payload.code_system,
-        "dose": payload.dose,
-        "frequency": payload.frequency,
-        "status": payload.status,
-    }
+    row = payload.to_db_row(medication_id=str(uuid.uuid4()), user_id=user["id"])
 
     result = supabase.table("medications").insert(row).execute()
     if not result.data:
         raise HTTPException(status_code=500, detail="Failed to create medication.")
+    return result.data[0]
+
+
+@router.put("/{medication_id}", response_model=MedicationResponse)
+async def replace_medication(
+    medication_id: str,
+    payload: MedicationCreate,
+    user: dict = Depends(get_current_user),
+):
+    """Replace a medication (full update). Only name is required."""
+    supabase = get_supabase()
+    _get_owned_medication(supabase, medication_id, user["id"])
+
+    row = payload.to_db_row(medication_id=medication_id, user_id=user["id"])
+    del row["id"]
+    del row["user_id"]
+
+    result = (
+        supabase.table("medications")
+        .update(row)
+        .eq("id", medication_id)
+        .eq("user_id", user["id"])
+        .execute()
+    )
+    if not result.data:
+        raise HTTPException(status_code=500, detail="Failed to update medication.")
     return result.data[0]
 
 
@@ -97,11 +118,11 @@ async def update_medication(
     payload: MedicationUpdate,
     user: dict = Depends(get_current_user),
 ):
-    """Update a medication."""
+    """Partially update a medication."""
     supabase = get_supabase()
     _get_owned_medication(supabase, medication_id, user["id"])
 
-    updates = {k: v for k, v in payload.model_dump(mode="json").items() if v is not None}
+    updates = payload.to_db_updates()
     if not updates:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields provided to update.")
 

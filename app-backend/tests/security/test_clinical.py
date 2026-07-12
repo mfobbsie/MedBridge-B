@@ -19,6 +19,12 @@ VALID_MEDICATION = {
     "dose": "10 mg",
     "frequency": "once daily",
     "status": "active",
+    "route": "oral",
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31",
+    "prescribing_provider": "Dr. Smith",
+    "reason": "Hypertension",
+    "notes": "Take with food",
 }
 
 
@@ -42,6 +48,13 @@ class TestMedicationsAuthentication:
         )
         assert resp.status_code == 401
 
+    def test_put_rejects_no_token(self, client: httpx.Client):
+        resp = client.put(
+            f"{MEDICATIONS_URL}/00000000-0000-0000-0000-000000000001",
+            json={"name": "Lisinopril"},
+        )
+        assert resp.status_code == 401
+
     def test_delete_rejects_no_token(self, client: httpx.Client):
         resp = client.delete(f"{MEDICATIONS_URL}/00000000-0000-0000-0000-000000000001")
         assert resp.status_code == 401
@@ -52,6 +65,46 @@ class TestMedicationsValidation:
         token = login(client, USER_A)
         resp = client.post(MEDICATIONS_URL, json={}, headers=auth_headers(token))
         assert resp.status_code == 422
+
+    def test_post_with_only_name_returns_201(self, client: httpx.Client):
+        token = login(client, USER_A)
+        resp = client.post(
+            MEDICATIONS_URL,
+            json={"name": "Name Only Test"},
+            headers=auth_headers(token),
+        )
+        assert resp.status_code == 201, resp.text
+        body = resp.json()
+        assert body["name"] == "Name Only Test"
+        assert body["status"] == "active"
+        assert body["is_active"] is True
+        client.delete(f"{MEDICATIONS_URL}/{body['id']}", headers=auth_headers(token))
+
+    def test_post_dosage_alias_works(self, client: httpx.Client):
+        token = login(client, USER_A)
+        resp = client.post(
+            MEDICATIONS_URL,
+            json={"name": "Dosage Alias Test", "dosage": "5 mg"},
+            headers=auth_headers(token),
+        )
+        assert resp.status_code == 201, resp.text
+        body = resp.json()
+        assert body["dose"] == "5 mg"
+        assert body["dosage"] == "5 mg"
+        client.delete(f"{MEDICATIONS_URL}/{body['id']}", headers=auth_headers(token))
+
+    def test_post_is_active_false_sets_stopped(self, client: httpx.Client):
+        token = login(client, USER_A)
+        resp = client.post(
+            MEDICATIONS_URL,
+            json={"name": "Inactive Test", "is_active": False},
+            headers=auth_headers(token),
+        )
+        assert resp.status_code == 201, resp.text
+        body = resp.json()
+        assert body["status"] == "stopped"
+        assert body["is_active"] is False
+        client.delete(f"{MEDICATIONS_URL}/{body['id']}", headers=auth_headers(token))
 
     def test_patch_with_no_fields_returns_400(self, client: httpx.Client):
         token = login(client, USER_A)
@@ -100,6 +153,15 @@ class TestMedicationsOwnership:
         resp = client.patch(
             f"{MEDICATIONS_URL}/{user_a_medication_id}",
             json={"dose": "20 mg"},
+            headers=auth_headers(token_b),
+        )
+        assert resp.status_code == 404
+
+    def test_user_b_cannot_put_user_a_medication(self, client: httpx.Client, user_a_medication_id: str):
+        token_b = login(client, USER_B)
+        resp = client.put(
+            f"{MEDICATIONS_URL}/{user_a_medication_id}",
+            json={"name": "Stolen Med"},
             headers=auth_headers(token_b),
         )
         assert resp.status_code == 404
@@ -166,6 +228,48 @@ class TestMedicationsCrudLifecycle:
             headers=auth_headers(token),
         )
         assert gone_resp.status_code == 404
+
+    def test_create_put_full_replace(self, client: httpx.Client):
+        token = login(client, USER_A)
+
+        create_resp = client.post(
+            MEDICATIONS_URL,
+            json={"name": "PUT Test Med", "dose": "10 mg"},
+            headers=auth_headers(token),
+        )
+        assert create_resp.status_code == 201, create_resp.text
+        medication_id = create_resp.json()["id"]
+
+        put_resp = client.put(
+            f"{MEDICATIONS_URL}/{medication_id}",
+            json={
+                "name": "PUT Test Med Updated",
+                "dosage": "20 mg",
+                "frequency": "twice daily",
+                "route": "oral",
+                "prescribing_provider": "Dr. Jones",
+                "start_date": "2026-02-01",
+                "end_date": "2026-08-01",
+                "reason": "Blood pressure",
+                "notes": "Evening dose",
+                "is_active": True,
+            },
+            headers=auth_headers(token),
+        )
+        assert put_resp.status_code == 200, put_resp.text
+        updated = put_resp.json()
+        assert updated["name"] == "PUT Test Med Updated"
+        assert updated["dose"] == "20 mg"
+        assert updated["dosage"] == "20 mg"
+        assert updated["frequency"] == "twice daily"
+        assert updated["route"] == "oral"
+        assert updated["prescribing_provider"] == "Dr. Jones"
+        assert updated["reason"] == "Blood pressure"
+        assert updated["notes"] == "Evening dose"
+        assert updated["is_active"] is True
+        assert "updated_at" in updated
+
+        client.delete(f"{MEDICATIONS_URL}/{medication_id}", headers=auth_headers(token))
 
     def test_list_status_filter(self, client: httpx.Client):
         token = login(client, USER_A)

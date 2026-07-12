@@ -388,7 +388,9 @@ Completes a stub profile created at registration if one exists.
 
 ## Medications
 
-Medications are scoped to the authenticated user via JWT. `user_id` is never sent in the request body — it is set server-side from the token. Medications are independent of uploaded documents; document linkage uses `health_record_id` only on the documents/summaries APIs.
+Medications are scoped to the authenticated user via JWT. `user_id` is never sent in the request body — it is set server-side from the token. Medications are independent of uploaded documents.
+
+**Only `name` is required** on create and replace (POST/PUT). All other fields are optional.
 
 ### List Medications
 
@@ -401,6 +403,7 @@ Medications are scoped to the authenticated user via JWT. `user_id` is never sen
 | Param | Type | Notes |
 |---|---|---|
 | `status` | string | Filter by status: `active`, `stopped`, `on-hold`, `unknown` |
+| `is_active` | boolean | Shorthand filter: `true` → active, `false` → stopped. Ignored when `status` is also provided |
 
 **Success (200):**
 
@@ -413,9 +416,18 @@ Medications are scoped to the authenticated user via JWT. `user_id` is never sen
     "code": "314076",
     "code_system": "RxNorm",
     "dose": "10 mg",
+    "dosage": "10 mg",
     "frequency": "once daily",
+    "route": "oral",
     "status": "active",
-    "created_at": "2026-06-08T10:00:00Z"
+    "is_active": true,
+    "start_date": "2026-01-01",
+    "end_date": null,
+    "prescribing_provider": "Dr. Smith",
+    "reason": "Hypertension",
+    "notes": "Take with food",
+    "created_at": "2026-06-08T10:00:00Z",
+    "updated_at": "2026-06-08T10:00:00Z"
   }
 ]
 ```
@@ -462,9 +474,16 @@ Medications are scoped to the authenticated user via JWT. `user_id` is never sen
   "name": "Lisinopril",
   "code": "314076",
   "code_system": "RxNorm",
-  "dose": "10 mg",
+  "dosage": "10 mg",
   "frequency": "once daily",
-  "status": "active"
+  "route": "oral",
+  "status": "active",
+  "is_active": true,
+  "start_date": "2026-01-01",
+  "end_date": "2026-12-31",
+  "prescribing_provider": "Dr. Smith",
+  "reason": "Hypertension",
+  "notes": "Take with food"
 }
 ```
 
@@ -473,9 +492,18 @@ Medications are scoped to the authenticated user via JWT. `user_id` is never sen
 | `name` | Yes | Minimum 1 character |
 | `code` | No | RxNorm or other code |
 | `code_system` | No | |
-| `dose` | No | |
+| `dose` / `dosage` | No | `dosage` is an alias for `dose` |
 | `frequency` | No | |
+| `route` | No | e.g. oral, topical |
 | `status` | No | `active` (default), `stopped`, `on-hold`, `unknown` |
+| `is_active` | No | Boolean shorthand; maps to `status` unless `status` is also sent |
+| `start_date` | No | ISO date (`YYYY-MM-DD`) |
+| `end_date` | No | ISO date; must be on or after `start_date` when both provided |
+| `prescribing_provider` | No | |
+| `reason` | No | |
+| `notes` | No | |
+
+Minimal valid body: `{"name": "Lisinopril"}`
 
 **Success (201):** `MedicationResponse` (same shape as list item).
 
@@ -489,7 +517,37 @@ Medications are scoped to the authenticated user via JWT. `user_id` is never sen
 
 ---
 
-### Update Medication
+### Replace Medication
+
+`PUT /medications/{medication_id}`
+
+**Auth:** Bearer JWT
+
+**Request body:** Same fields as create. Only `name` is required; omitted optional fields are cleared (set to `null` or defaults). `status` defaults to `active` when omitted.
+
+```json
+{
+  "name": "Lisinopril",
+  "dosage": "20 mg",
+  "frequency": "once daily",
+  "status": "active"
+}
+```
+
+**Success (200):** Updated `MedicationResponse`.
+
+**Errors:**
+
+| Status | Body | When |
+|---|---|---|
+| 401 | `{"detail": "Invalid or expired token"}` | Missing or bad JWT |
+| 404 | `{"detail": "Medication not found."}` | Not found or belongs to another user |
+| 422 | Validation detail array | Invalid field values |
+| 500 | `{"detail": "Failed to update medication."}` | Database error |
+
+---
+
+### Update Medication (partial)
 
 `PATCH /medications/{medication_id}`
 
@@ -502,7 +560,9 @@ Medications are scoped to the authenticated user via JWT. `user_id` is never sen
   "name": "Lisinopril",
   "dose": "20 mg",
   "frequency": "once daily",
-  "status": "stopped"
+  "status": "stopped",
+  "is_active": false,
+  "notes": "Discontinued per provider"
 }
 ```
 
