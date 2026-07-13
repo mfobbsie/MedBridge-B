@@ -73,7 +73,7 @@ export const useRemindersDomain = () => {
         scheduleWorkspace: {
             title: "Care Schedule & Reminders",
             description: "Track time-sensitive health tasks, follow-up notifications, and critical patient alerts.",
-            icon: "⏰",
+            icon: "📆",
         },
         emptyWorkspace: {
             title: "All Caught Up!",

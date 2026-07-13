@@ -1,9 +1,10 @@
 
 export interface apiHelper<T = unknown> {
     url: string;
-    method: 'POST' | 'GET' | 'DELETE' | 'PATCH' | "HEAD";
-    body: T,
+    method: 'POST' | 'GET' | 'DELETE' | 'PATCH' | "HEAD" | "PUT";
+    body?: T,
     tokenOverride?: string;
+    params?: Record<string, string | number | boolean | null | undefined>
 }
 
 export const setAuthCookie = (token: string, days: number = 7): void => {
@@ -38,7 +39,7 @@ export const clearAuthCookie = (): void => {
 
 
 
-export const apiHelper = async ({ url, method, body, tokenOverride }: apiHelper) => {
+export const apiHelper = async ({ url, method, body, tokenOverride, params }: apiHelper) => {
     try {
 
         const token = tokenOverride || getAuthCookie();
@@ -52,6 +53,17 @@ export const apiHelper = async ({ url, method, body, tokenOverride }: apiHelper)
         if (token) {
             headers["Authorization"] = `Bearer ${token}`;
         }
+
+        const parsedUrl = new URL(url);
+        if(params){
+            Object.entries(params).forEach(([key, value]) => {
+                if(value !== undefined && value !== null){
+                    parsedUrl.searchParams.append(key, String(value));
+                }
+            })
+        }
+
+
         const options: RequestInit = {
             method: method,
             headers: headers,
@@ -60,7 +72,7 @@ export const apiHelper = async ({ url, method, body, tokenOverride }: apiHelper)
         if (body && method !== "GET" && method !== "HEAD") {
             options.body = isFormData ? body : JSON.stringify(body);
         }
-        const response = await fetch(url, options);
+        const response = await fetch(parsedUrl.toString(), options);
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
