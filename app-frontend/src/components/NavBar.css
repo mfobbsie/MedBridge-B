@@ -112,3 +112,11 @@
 .logout-link {
   cursor: pointer;
 }
+
+
+/* Universal hover style for all navbar items */
+.nav-item:hover,
+.mobile-item:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}

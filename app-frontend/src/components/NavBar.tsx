@@ -1,13 +1,16 @@
 // src/components/NavBar.tsx
 import { NavLink, useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
-import { useLogout } from "../api/auth.queries";
+import { useLogin, useLogout } from "../api/auth.queries";
 import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
+import { AuthContainer } from "./AuthContainer";
+import { useModal } from "../context/ModalContext";
 import "./NavBar.css";
 
 export const NavBar = (): ReactNode => {
   const { token } = useAuth();
+  const { openModal } = useModal();
   const logoutMutation = useLogout();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -25,11 +28,18 @@ export const NavBar = (): ReactNode => {
   }, []); // Only run on mount; no need to depend on isOpen unless logic requires it
 
 
+  const handleLogin = () => {
+      setIsOpen(false); // Close the mobile menu 
+      openModal(<AuthContainer />); // Take them to your login form page
+};
+
   const handleLogout = () => {
     logoutMutation.mutate();
     setIsOpen(false); // Close the mobile menu on logout
     navigate("/");
   };
+
+
 
   return (
     <nav className="navbar">
@@ -66,9 +76,13 @@ export const NavBar = (): ReactNode => {
         </NavLink>
 
         {/* Only show logout if user is logged in */}
-        {token && (
+        {token ? (
           <span className="nav-item logout-link" onClick={handleLogout}>
             Logout
+          </span>
+        ) : (
+          <span className="nav-item login-link" onClick={handleLogin}>
+            Login
           </span>
         )}
       </div>
@@ -107,7 +121,7 @@ export const NavBar = (): ReactNode => {
             Upload Docs
           </NavLink>
 
-          {token && (
+          {token ? (
             <span
               className="mobile-item logout-link"
               onClick={() => {
@@ -115,6 +129,15 @@ export const NavBar = (): ReactNode => {
               }}
             >
               Logout
+            </span>
+          ) : (
+            <span
+              className="mobile-item login-link"
+              onClick={() => {
+                handleLogin();
+              }}
+            >
+              Login
             </span>
           )}
         </div>
