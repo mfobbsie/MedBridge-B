@@ -44,8 +44,8 @@ export const MedicalHistory = () => {
   const providers =
     (providersDomain?.providersList as ProviderResponse[] | undefined) ?? [];
 
-  const settings = settingsDomain?.data?.settings;
-  
+  const settings = settingsDomain?.settings;
+
   // Medications domain sorts data into current/past arrays
   const currentMedications =
     (medicationsDomain?.current as MedicationResponse[] | undefined) ?? [];
@@ -54,7 +54,7 @@ export const MedicalHistory = () => {
 
   // Charts endpoint still in development – keep placeholder
   //const charts =
-    //(chartsDomain?.charts as unknown as MedicationResponse[] | undefined) ?? [];
+  //(chartsDomain?.charts as unknown as MedicationResponse[] | undefined) ?? [];
 
   const [activeTab, setActiveTab] = useState<
     "documents" | "charts" | "medications"
