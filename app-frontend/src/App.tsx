@@ -3,6 +3,7 @@ import { AuthContainer } from "./components/AuthContainer";
 import { useModal } from "./context/ModalContext";
 import "./main.css"
 import { LandingPage } from "./pages/LandingPage";
+import { NavBar } from "./components/NavBar";
 
 export default function App(): ReactNode {
   const { openModal } = useModal();
@@ -14,6 +15,7 @@ export default function App(): ReactNode {
 
   return (
     <div className="app-container">
+      <NavBar />
       <header className="app-header">
         <h1 className="app-title">Welcome to</h1>
         <img src="/logo.png" alt="MedBridge logo" className="app-logo" />
@@ -31,14 +33,14 @@ export default function App(): ReactNode {
         </p>
       </div>
       <LandingPage />
-      <main className="action-row">
-        <button type="button" className="login-btn" onClick={handleOpenAuth}>
+      {/* <main className="action-row"> */}
+        {/* <button type="button" className="login-btn" onClick={handleOpenAuth}>
           🔑 Sign In
-        </button>
+        </button> */}
 
         {/* <UploadDocs /> */}
       
-      </main>
+      {/* </main> */}
     </div>
   );
 }
