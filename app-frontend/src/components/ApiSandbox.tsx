@@ -7,7 +7,7 @@ import {
 } from "../api/reminders.queries"
 import { useRemindersDomain } from "../hooks/useRemindersDomain";
 import { EmptyState } from "./EmptyState";
-import { ErrorComponent } from "./ErrorComponent";
+import { ErrorState } from "./ErrorState";
 import { LoadingSpinner } from "./LoadingSpinner";
 
 
@@ -80,7 +80,7 @@ export const ApiSandbox = () => {
     const targetId = data.remindersList[0]?.id || "";
 
     if (flags.isPending) return <LoadingSpinner />
-    if (flags.hasError) return <ErrorComponent error={flags.errorMessage} />
+    if (flags.hasError) return <ErrorState error={flags.errorMessage} />
     if (flags.isReminderListEmpty) return <EmptyState title={viewConfigs.emptyWorkspace.title} description={viewConfigs.emptyWorkspace.description} />
 
     return (

@@ -26,7 +26,7 @@ export interface UserSettingsUpdate {
 
 
 export const useSubmitFeedback = (userId: string) => {
-    const queryClient = useQueryClient();
+    // const queryClient = useQueryClient();
 
     return useMutation<void, Error, FeedbackSubmit>({
         mutationFn: (body: FeedbackSubmit) => {
@@ -39,7 +39,7 @@ export const useSubmitFeedback = (userId: string) => {
         },
         onSuccess: (data) => {
             console.log("Feedback successful:", data);
-            queryClient.invalidateQueries({ queryKey: ["analytics", "feedback", userId] });
+            // queryClient.invalidateQueries({ queryKey: ["analytics", "feedback", userId] });
         },
         onError: (error) => {
             console.error("Feedback failed:", error);
@@ -84,6 +84,7 @@ export const useUpdateUserSettings = (userId: string) => {
         onSuccess: (data) => {
             console.log("User settings successfully changed:", data);
             queryClient.invalidateQueries({ queryKey: ["analytics", "settings", userId] });
+            queryClient.invalidateQueries({ queryKey: ["analytics", "dashboard", userId] });
         },
         onError: (error) => {
             console.error("Error updating user settings:", error);
@@ -112,7 +113,7 @@ export const useGetUserSettings = (userId: string) => {
 
 export const usePatientDashboard = (userId: string) => {
     return useQuery({
-        queryKey: ["analytics", "dashboard", "patient", userId],
+        queryKey: ["analytics", "dashboard", userId, "patient"],
         queryFn: () => {
             return apiHelper({
                 url: "http://localhost:8000/analytics/dashboard/patient",
@@ -127,7 +128,7 @@ export const usePatientDashboard = (userId: string) => {
 
 export const useStakeholderDashboard = (userId: string) => {
     return useQuery({
-        queryKey: ["analytics", "dashboard", "stakeholder", userId],
+        queryKey: ["analytics", "dashboard", userId, "stakeholder"],
         queryFn: () => {
             return apiHelper({
                 url: "http://localhost:8000/analytics/dashboard/stakeholder",
@@ -142,7 +143,7 @@ export const useStakeholderDashboard = (userId: string) => {
 
 export const useTeamDashboard = (userId: string) => {
     return useQuery({
-        queryKey: ["analytics", "dashboard", "team", userId],
+        queryKey: ["analytics", "dashboard", userId, "team"],
         queryFn: () => {
             return apiHelper({
                 url: "http://localhost:8000/analytics/dashboard/team",
@@ -157,7 +158,7 @@ export const useTeamDashboard = (userId: string) => {
 
 export const useProviderReadinessDashboard = (userId: string) => {
     return useQuery({
-        queryKey: ["analytics", "dashboard", "provider-readiness", userId],
+        queryKey: ["analytics", "dashboard", userId, "provider-readiness"],
         queryFn: () => {
             return apiHelper({
                 url: "http://localhost:8000/analytics/dashboard/provider-readiness",

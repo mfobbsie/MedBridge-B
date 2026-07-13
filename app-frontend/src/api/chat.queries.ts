@@ -112,12 +112,11 @@ export const useGetChatHistory = (document_id: string) => {
             return apiHelper({
                 url: `http://localhost:8000/documents/${document_id}/chat`,
                 method: "GET",
-                body: null,
             })
         },
-
-    })
-}
+        enabled: !!document_id
+    });
+};
 
 
 
@@ -131,9 +130,9 @@ export const useAskQuestion = () => {
                 body: body,
             })
         },
-        onSuccess: (data) => {
+        onSuccess: (data, {document_id}) => {
             console.log("Chat Questions successfully submitted", data.message_id);
-            queryClient.invalidateQueries({ queryKey: ["chat"] })
+            queryClient.invalidateQueries({ queryKey: ["chat", document_id] })
         },
         onError: (error) => {
             console.error("Error with submitting chat question", error)

@@ -1,5 +1,5 @@
 import { useDocumentsDomain } from "../hooks/useDocumentsDomain"
-import { ErrorComponent } from "./ErrorComponent";
+import { ErrorState } from "./ErrorState";
 import { LoadingSpinner } from "./LoadingSpinner";
 import { useRef } from "react";
 
@@ -16,7 +16,7 @@ export const UploadDocuments = ({ selectedDocumentId, onSelectDocument }: Upload
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     if (flags.isPending) return <LoadingSpinner />;
-    if (flags.hasError) return <ErrorComponent error={flags.errorMessage} />;
+    if (flags.hasError) return <ErrorState error={flags.errorMessage} />;
 
     const handleContainerClick = () => {
         fileInputRef.current?.click();
