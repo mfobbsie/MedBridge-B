@@ -1,7 +1,7 @@
 // src/components/NavBar.tsx
 import { NavLink, useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
-import { useLogin, useLogout } from "../api/auth.queries";
+import { useLogout } from "../api/auth.queries";
 import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
 import { AuthContainer } from "./AuthContainer";
@@ -82,7 +82,7 @@ export const NavBar = (): ReactNode => {
           </span>
         ) : (
           <span className="nav-item login-link" onClick={handleLogin}>
-            Login
+            Sign Up/Login
           </span>
         )}
       </div>
@@ -137,7 +137,7 @@ export const NavBar = (): ReactNode => {
                 handleLogin();
               }}
             >
-              Login
+              Sign Up/Login
             </span>
           )}
         </div>
