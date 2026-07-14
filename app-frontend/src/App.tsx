@@ -1,19 +1,20 @@
 import { type ReactNode } from "react";
-import { AuthContainer } from "./components/AuthContainer";
-import { useModal } from "./context/ModalContext";
+// import { AuthContainer } from "./components/AuthContainer";
+// import { useModal } from "./context/ModalContext";
 import "./main.css"
 import { LandingPage } from "./pages/LandingPage";
 import { NavBar } from "./components/NavBar";
 
 export default function App(): ReactNode {
-  const { openModal } = useModal();
+  // const { openModal } = useModal();
 
-  const handleOpenAuth = (): void => {
-    const content: ReactNode = <AuthContainer />;
-    openModal(content);
-  };
+  // const handleOpenAuth = (): void => {
+  //   const content: ReactNode = <AuthContainer />;
+  //   openModal(content);
+  // };
 
   return (
+    
     <div className="app-container">
       <NavBar />
       <header className="app-header">
