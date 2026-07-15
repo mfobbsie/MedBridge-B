@@ -5,7 +5,9 @@
   justify-content: space-between;
   padding: 12px 24px;
   background-color: #F7FAFC;
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .nav-left {
@@ -119,4 +121,33 @@
 .mobile-item:hover {
   text-decoration: underline;
   cursor: pointer;
+}
+
+/* Changes the Navbar view in the Landing Page */
+
+.app-container{
+  position: relative;
+  margin: 0; 
+  padding: 0; 
+  width: 100%;
+}
+.app-container .nav-logo {
+  height: 70px; 
+  width: auto;
+  margin: 0;             
+  padding: 0;
+}
+
+.app-container .navbar{
+  position: absolute;     /* Pins it to the top of the app-container */
+  top: 0;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box; /* Prevents padding from breaking full-width layout */
+  padding: 20px 40px;     /* Removed height: 40% to keep it clean and tight to the top */
+  margin: 0;
+}
+
+.app-container .nav-item {
+  font-size: 1.2rem;
 }

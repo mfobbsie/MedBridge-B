@@ -64,34 +64,87 @@ On `401`, redirect to login. On logout, call `POST /auth/logout` before clearing
 
 ## Error Response Formats
 
-Most endpoints return **standard FastAPI errors**:
-
-```json
-{ "detail": "Human-readable error message" }
-```
-
-Validation errors (`422`) return:
+All REST API errors return a consistent **`ApiErrorResponse`** envelope:
 
 ```json
 {
-  "detail": [
-    {
-      "type": "string_too_short",
-      "loc": ["body", "password"],
-      "msg": "String should have at least 8 characters",
-      "input": "short"
-    }
-  ]
+  "success": false,
+  "error_code": "NOT_FOUND",
+  "message": "Document not found.",
+  "details": null,
+  "retry_after": null
 }
 ```
 
-**AI chat errors (`503` only)** on `POST /documents/{document_id}/chat` return an `ErrorEnvelope`:
+| Field | Type | Description |
+|---|---|---|
+| `success` | `false` | Always `false` on errors |
+| `error_code` | `string` | Machine-readable code for branching logic |
+| `message` | `string` | Human-readable message for display |
+| `details` | `array \| null` | Field-level validation errors (`422` only) |
+| `retry_after` | `number \| null` | Seconds to wait before retry (AI outages) |
+
+### Common `error_code` values
+
+| HTTP | error_code | When |
+|---|---|---|
+| 400 | `BAD_REQUEST` | Invalid request state, empty PATCH body |
+| 401 | `UNAUTHORIZED` | Missing or expired JWT |
+| 403 | `FORBIDDEN` | Access denied |
+| 404 | `NOT_FOUND` | Resource not found |
+| 409 | `CONFLICT` | Duplicate resource (e.g. email, profile) |
+| 422 | `VALIDATION_ERROR` | Request body/query validation failed |
+| 429 | `RATE_LIMITED` | Auth rate limit exceeded |
+| 500 | `INTERNAL_ERROR` | Unexpected server error |
+| 502 | `BAD_GATEWAY` | Downstream service failure |
+| 503 | `SERVICE_UNAVAILABLE` | AI service temporarily unavailable |
+
+Domain-specific codes (e.g. `GROQ_TIMEOUT`, `GROQ_UNAVAILABLE`, `DOC_NOT_FOUND`) may appear where semantically appropriate.
+
+### Validation errors (`422`)
+
+```json
+{
+  "success": false,
+  "error_code": "VALIDATION_ERROR",
+  "message": "Request validation failed",
+  "details": [
+    {
+      "field": "password",
+      "message": "String should have at least 8 characters",
+      "type": "string_too_short"
+    }
+  ],
+  "retry_after": null
+}
+```
+
+### Frontend consumption
+
+```typescript
+if (!response.ok) {
+  const error = await response.json();
+  // Display to user
+  showToast(error.message);
+  // Branch on code (e.g. redirect on session expiry)
+  if (error.error_code === "UNAUTHORIZED") redirectToLogin();
+  // Field-level form errors
+  error.details?.forEach((d) => setFieldError(d.field, d.message));
+}
+```
+
+> **Note:** Endpoint-specific error tables below describe the `message` field value for each status code. The response always uses the envelope above.
+
+### AI service errors (`503`)
+
+`POST /documents/{document_id}/chat` may return:
 
 ```json
 {
   "success": false,
   "error_code": "GROQ_TIMEOUT",
   "message": "The AI is taking longer than usual. Please try again in a moment.",
+  "details": null,
   "retry_after": 5
 }
 ```
@@ -101,7 +154,7 @@ Validation errors (`422`) return:
 | `GROQ_TIMEOUT` | AI slow | Show message + retry after `retry_after` seconds |
 | `GROQ_UNAVAILABLE` | AI down | Show message + retry button |
 
-SSE streaming errors are inline in the event stream: `data: [ERROR] <message>`
+SSE streaming errors are inline in the event stream: `data: [ERROR] <message>` (unchanged).
 
 ---
 
