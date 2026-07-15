@@ -4,7 +4,7 @@ import type { ModalConfig } from "../types/modal";
 type ModalRendererProps = {
   onClose: () => void;
   content: ReactNode | null;
-  config?: ModalConfig
+  config?: ModalConfig;
 };
 
 export const ModalRenderer = ({
