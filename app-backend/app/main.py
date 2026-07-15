@@ -14,6 +14,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 import time
 from app.config import get_settings
+from app.exceptions import register_exception_handlers
 from app.routers import auth, documents, features, user_settings, app_router, analytics, patient_profile, medications
 import logging
 
@@ -40,6 +41,8 @@ app = FastAPI(
     ),
     version="0.1.0",
 )
+
+register_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,

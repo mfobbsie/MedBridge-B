@@ -219,7 +219,8 @@ class TestUnsupportedFiles:
             headers=auth(token),
         )
         assert resp.status_code == 400
-        assert "Unsupported" in resp.json()["detail"] or "type" in resp.json()["detail"].lower()
+        message = resp.json()["message"]
+        assert "Unsupported" in message or "type" in message.lower()
 
     def test_no_partial_data_written_on_rejection(self, client, token):
         count_before = client.get("/dashboard", headers=auth(token)).json()["total_documents"]
