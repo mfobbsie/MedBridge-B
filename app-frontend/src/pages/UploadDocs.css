@@ -1,0 +1,30 @@
+/* src/pages/UploadDocs.css */
+
+.upload-docs-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  padding: 24px;
+
+  /* Center the entire grid on the page */
+  max-width: 1400px;
+  margin: 0 auto;
+
+  /* Center items within each column */
+  align-items: center;
+  justify-items: center;
+}
+
+/* Left column */
+.upload-side-column {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Right column */
+.summary-side-column {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}

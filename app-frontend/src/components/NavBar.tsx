@@ -1,42 +1,26 @@
 // src/components/NavBar.tsx
 import { NavLink, useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
-import { useLogin, useLogout } from "../api/auth.queries";
+import { useLogout } from "../api/auth.queries";
 import { useAuth } from "../context/AuthContext";
-import { useState, useEffect } from "react";
-import { AuthContainer } from "./AuthContainer";
-import { useModal } from "../context/ModalContext";
+import { useState } from "react";
 import "./NavBar.css";
 
 export const NavBar = (): ReactNode => {
   const { token } = useAuth();
-  const { openModal } = useModal();
   const logoutMutation = useLogout();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Reconstructed the missing useEffect hook
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 768) {
-        setIsOpen(false); // Closes mobile menu when shifting to desktop view
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []); // Only run on mount; no need to depend on isOpen unless logic requires it
-
-
-  const handleLogin = () => {
-      setIsOpen(false); // Close the mobile menu 
-      openModal(<AuthContainer />); // Take them to your login form page
-};
-
   const handleLogout = () => {
     logoutMutation.mutate();
-    setIsOpen(false); // Close the mobile menu on logout
+    setIsOpen(false);
     navigate("/");
+  };
+
+  const handleLogin = () => {
+    setIsOpen(false);
+    navigate("/signin");
   };
 
 
@@ -82,7 +66,7 @@ export const NavBar = (): ReactNode => {
           </span>
         ) : (
           <span className="nav-item login-link" onClick={handleLogin}>
-            Login
+            Sign Up/Login
           </span>
         )}
       </div>
@@ -137,7 +121,7 @@ export const NavBar = (): ReactNode => {
                 handleLogin();
               }}
             >
-              Login
+              Sign Up/Login
             </span>
           )}
         </div>

@@ -85,7 +85,10 @@ def test_other_user_cannot_delete_document(client: httpx.Client):
 
     resp = client.delete(f"/documents/{doc_id}", headers=auth_headers(token_b))
     assert resp.status_code == 404
-    assert resp.json() == {"detail": "Document not found."}
+    body = resp.json()
+    assert body["success"] is False
+    assert body["error_code"] == "NOT_FOUND"
+    assert body["message"] == "Document not found."
 
     owner_resp = client.get(f"/documents/{doc_id}", headers=auth_headers(token_a))
     assert owner_resp.status_code == 200

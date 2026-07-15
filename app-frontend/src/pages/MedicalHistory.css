@@ -1,9 +1,26 @@
-.medical-history-page {
-  display: flex;
+.medical-history-page, .medical-history-container {
+  display: grid;
+  grid-template-columns: 300px 1fr;
   gap: 2rem;
   padding: 2rem;
   background: #F7FAFC; /* soft white background */
   color: #1B3A5C; /* deep navy text */
+}
+
+/* Responsive collapse */
+@media (max-width: 900px) {
+  .medical-history-page,
+  .medical-history-container {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    order: 2;
+  }
+
+  .main-content {
+    order: 1;
+  }
 }
 
 /* LEFT SIDEBAR */
@@ -40,6 +57,7 @@
   color: #1B3A5C;
 }
 
+/* === TABS */
 .tab-buttons {
   display: flex;
   gap: 1rem;
@@ -67,7 +85,7 @@
   color: white;
   border-color: #2D7DD2;
 }
-
+/* === TAB CONTENT  === */
 .tab-content {
   margin-top: 1rem;
   padding: 1rem;
