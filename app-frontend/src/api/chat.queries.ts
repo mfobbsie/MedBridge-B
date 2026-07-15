@@ -105,10 +105,11 @@ export const useRateMessage = () => {
 }
 
 
-export const useGetChatHistory = (document_id: string) => {
+export const useGetChatHistory = (document_id?: string) => {
     return useQuery<ChatResponse>({
         queryKey: ["chat", document_id],
         queryFn: () => {
+            if(!document_id) throw new Error("Document ID is required.");
             return apiHelper({
                 url: `http://localhost:8000/documents/${document_id}/chat`,
                 method: "GET",

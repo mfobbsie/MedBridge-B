@@ -3,7 +3,7 @@ import { useAskQuestion, useGetChatHistory, useRateMessage, useRateUnderstanding
 
 
 
-export const useDocumentChatDomain = (document_id: string) => {
+export const useDocumentChatDomain = (document_id?: string) => {
 
     const {
         aiText,
@@ -110,8 +110,12 @@ export const useDocumentChatDomain = (document_id: string) => {
         },
 
         actions: {
-            askQuestion: (body: any) => askQuestion({ document_id, body }),
-            startAiStream: (message: string) => streamTrigger(document_id, message),
+            askQuestion: (body: any) => {
+                if(document_id) askQuestion({ document_id, body });
+            },
+            startAiStream: (message: string) => {
+                if(document_id) streamTrigger(document_id, message)
+                },
             cancelAiStream: stopStream,
             submitMessageRating: (message_id: string, body: any) => rateMessage({ message_id, body }),
             submitUnderstandingScore: (summary_id: string, body: any) => rateUnderstanding({ summary_id, body }),
