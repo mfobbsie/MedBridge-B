@@ -1,21 +1,32 @@
-import { useGetUserProfile } from "../api/user-profile.queries";
+import { useGetUserProfile, useUpdateUserProfile } from "../api/user-profile.queries";
 
 export const useUserProfileDomain = (user_id: string) => {
   const {
     data: profileData,
-    isPending,
-    isError,
-    error,
+    isPending: isLoadingProfile,
+    isError:isProfileError,
+    error: profileError,
   } = useGetUserProfile(user_id);
 
-  const hasError = isError;
-  const errorMessage =
-    error?.message || "Failed to load user profile information.";
-
   const isProfileEmpty =
-    !isPending &&
-    !isError &&
+    !isLoadingProfile &&
+    !isProfileError &&
     (!profileData || Object.keys(profileData).length === 0);
+
+  // UPDATE PROFILE
+  const {
+    mutate: updateProfile,
+    isPending: isUpdating,
+    isError: isUpdateError,
+    error: updateError,
+  } = useUpdateUserProfile(user_id);
+
+  // COMBINED ERROR FLAGS
+  const hasError = isProfileError || isUpdateError;
+  const errorMessage =
+    profileError?.message ||
+    updateError?.message ||
+    "Failed to load or update user profile information.";
 
   return {
     data: {
@@ -23,12 +34,15 @@ export const useUserProfileDomain = (user_id: string) => {
       rawResponse: profileData,
     },
     flags: {
-      isPending,
+      isLoadingProfile,
+      isUpdating,
       hasError,
       errorMessage,
       isProfileEmpty,
     },
-    actions: {},
+    actions: {
+      updateProfile,
+      },
     viewConfigs: {
       profileSection: {
         title: "User Profile",
