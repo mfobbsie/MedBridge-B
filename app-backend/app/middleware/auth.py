@@ -30,6 +30,8 @@ async def get_current_user(
                 detail="Invalid or expired token",
             )
         return {"id": response.user.id, "email": response.user.email}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.warning(f"Auth validation failed: {e}")
         raise HTTPException(

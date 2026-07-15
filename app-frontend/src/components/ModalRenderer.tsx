@@ -10,7 +10,7 @@ type ModalRendererProps = {
 export const ModalRenderer = ({
   onClose,
   content,
-  config,
+  config
 }: ModalRendererProps): ReactNode => {
   if (!content) return null;
 

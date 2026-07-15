@@ -1,51 +1,28 @@
-import { useLogin } from "../api/auth.queries";
-import { useRegister } from "../api/auth.queries";
-import { FORM_CONFIG } from "../config/formRegistry";
-import { useAuth } from "../context/AuthContext";
-import { useModal } from "../context/ModalContext";
+
+import { FORM_CONFIG } from "../config/formConfig";
 import { useForm } from "../hooks/useForm";
-import type { LoginRequest, RegisterRequest } from "../types/auth";
 import type { FormFactoryConfig } from "../types/form";
 import type { ReactNode } from "react";
 
 
-export const FormFactory = ({ config }: FormFactoryConfig): ReactNode => {
-  const fields = FORM_CONFIG[config];
+
+export const FormFactory = ({
+  config,
+  onSubmit,
+  isLoading,
+  activeError,
+  submitLabel,
+  initialData,
+}: FormFactoryConfig): ReactNode => {
+  const fields = FORM_CONFIG[config] || [];
+
   const { values, touched, errors, changeHandler, blurHandler } =
-    useForm(fields);
-
-  const {
-    mutate: login,
-    isPending: isLogingIn,
-    error: loginError,
-  } = useLogin();
-  const {
-    mutate: register,
-    isPending: isRegistering,
-    error: registerError,
-  } = useRegister();
-  const activeError = config === "login" ? loginError : registerError;
-  const isLoading = config === "login" ? isLogingIn : isRegistering;
-
-  const { closeModal } = useModal();
-  const { login: saveSession } = useAuth();
+    useForm(fields, initialData);
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
 
-    if (config === "login") {
-      login(values as unknown as LoginRequest, {
-        onSuccess: (data) => {
-          if (data.access_token) {
-            saveSession(data.access_token, data.user_id);
-          }
-        },
-      });
-    } else {
-      register(values as unknown as RegisterRequest, {
-        onSuccess: () => closeModal(),
-      });
-    }
+    onSubmit(values as Record<string, string>);
   };
 
   return (
@@ -96,12 +73,9 @@ export const FormFactory = ({ config }: FormFactoryConfig): ReactNode => {
       ))}
 
       <button type="submit" className="submit-button" disabled={isLoading}>
-        {isLoading
-          ? "Authenticating..."
-          : config === "login"
-            ? "Sign In"
-            : "Register"}
+        {isLoading ? "Authenticating..." : submitLabel}
       </button>
     </form>
   );
 };
+

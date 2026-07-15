@@ -1,13 +1,14 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFile, File, status
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from app.schemas.documents import (
     UploadResponse, DocumentResponse, DocumentListResponse,
     SummaryResponse, ChatRequest, ChatResponse, FeedbackRequest,
     UnderstandingRequest, UnderstandingResponse,
     PrepResponse, DashboardResponse,
     KpiReadingLevel, KpiQuality, KpiSatisfaction,
-    ErrorEnvelope, groq_timeout_error, groq_unavailable_error, document_not_found_error,
 )
+from app.schemas.errors import groq_timeout_error, groq_unavailable_error
+from app.exceptions import MedBridgeHTTPException
 from app.middleware.auth import get_current_user, get_current_user_sse
 # schemas imported above
 from app.services import document_service, chat_service
@@ -208,10 +209,22 @@ async def ask_question(
         )
     except Exception:
         logger.exception("Groq call failed in chat endpoint")
-        return JSONResponse(status_code=503, content=groq_timeout_error().model_dump())
+        timeout = groq_timeout_error()
+        raise MedBridgeHTTPException(
+            status_code=503,
+            detail=timeout.message,
+            error_code=timeout.error_code,
+            retry_after=timeout.retry_after,
+        )
 
     if not result.success:
-        return JSONResponse(status_code=503, content=groq_unavailable_error().model_dump())
+        unavailable = groq_unavailable_error()
+        raise MedBridgeHTTPException(
+            status_code=503,
+            detail=unavailable.message,
+            error_code=unavailable.error_code,
+            retry_after=unavailable.retry_after,
+        )
 
     message_id = str(uuid.uuid4())
     # Store user message
