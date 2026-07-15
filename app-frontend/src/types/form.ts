@@ -1,4 +1,4 @@
-import type { FORM_CONFIG } from "../config/formRegistry";
+import type { FORM_CONFIG } from "../config/formConfig";
 
 
 export interface FormFactoryConfig {
