@@ -5,6 +5,8 @@ from typing import Literal, Optional, Self
 
 from pydantic import AliasChoices, BaseModel, ConfigDict, Field, computed_field, model_validator
 
+from app.utils.validation import NonEmptyStr, OptionalNonEmptyStr
+
 MedicationStatus = Literal["active", "stopped", "on-hold", "unknown"]
 
 _DB_MUTABLE_FIELDS = (
@@ -29,18 +31,18 @@ def _validate_date_range(start_date: Optional[date], end_date: Optional[date]) -
 
 
 class _MedicationInputBase(BaseModel):
-    code: Optional[str] = None
-    code_system: Optional[str] = None
-    dose: Optional[str] = Field(None, validation_alias=AliasChoices("dosage", "dose"))
-    frequency: Optional[str] = None
-    route: Optional[str] = None
+    code: OptionalNonEmptyStr = None
+    code_system: OptionalNonEmptyStr = None
+    dose: OptionalNonEmptyStr = Field(None, validation_alias=AliasChoices("dosage", "dose"))
+    frequency: OptionalNonEmptyStr = None
+    route: OptionalNonEmptyStr = None
     status: Optional[MedicationStatus] = None
     is_active: Optional[bool] = None
     start_date: Optional[date] = None
     end_date: Optional[date] = None
-    prescribing_provider: Optional[str] = None
-    reason: Optional[str] = None
-    notes: Optional[str] = None
+    prescribing_provider: OptionalNonEmptyStr = None
+    reason: OptionalNonEmptyStr = None
+    notes: OptionalNonEmptyStr = None
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -51,7 +53,7 @@ class _MedicationInputBase(BaseModel):
 
 
 class MedicationCreate(_MedicationInputBase):
-    name: str = Field(..., min_length=1)
+    name: NonEmptyStr = Field(..., min_length=1)
 
     @model_validator(mode="after")
     def resolve_status(self) -> Self:
@@ -83,7 +85,7 @@ class MedicationCreate(_MedicationInputBase):
 
 
 class MedicationUpdate(_MedicationInputBase):
-    name: Optional[str] = Field(None, min_length=1)
+    name: OptionalNonEmptyStr = Field(None, min_length=1)
 
     @model_validator(mode="after")
     def resolve_status_from_is_active(self) -> Self:

@@ -2,26 +2,34 @@
 Pydantic schemas for Mary features:
 reminders, trusted_contacts, follow_ups, providers, resources, health_scores
 """
-from pydantic import BaseModel, EmailStr
-from typing import Optional
+from pydantic import BaseModel, EmailStr, Field
+from typing import Literal, Optional
 from datetime import datetime, date
+
+from app.utils.validation import NonEmptyStr, OptionalNonEmptyStr, UuidStr
+
+
+ReminderType = Literal["medication", "appointment", "follow_up", "general"]
+RepeatInterval = Literal["daily", "weekly", "monthly"]
+AccessLevel = Literal["read", "full"]
+ContactStatus = Literal["pending", "accepted", "revoked"]
 
 
 # ── Reminders ────────────────────────────────────────────────────────────────
 
 class ReminderCreate(BaseModel):
-    health_record_id: Optional[str] = None
-    reminder_type: str          # "medication" | "appointment" | "follow_up" | "general"
-    title: str
-    body: Optional[str] = None
+    health_record_id: Optional[UuidStr] = None
+    reminder_type: ReminderType
+    title: NonEmptyStr = Field(..., min_length=1, max_length=255)
+    body: OptionalNonEmptyStr = None
     remind_at: datetime
-    repeat_interval: Optional[str] = None  # "daily" | "weekly" | "monthly" | None
+    repeat_interval: Optional[RepeatInterval] = None
 
 class ReminderUpdate(BaseModel):
-    title: Optional[str] = None
-    body: Optional[str] = None
+    title: OptionalNonEmptyStr = Field(None, min_length=1, max_length=255)
+    body: OptionalNonEmptyStr = None
     remind_at: Optional[datetime] = None
-    repeat_interval: Optional[str] = None
+    repeat_interval: Optional[RepeatInterval] = None
     completed: Optional[bool] = None
 
 class ReminderResponse(BaseModel):
@@ -40,14 +48,14 @@ class ReminderResponse(BaseModel):
 # ── Trusted Contacts ─────────────────────────────────────────────────────────
 
 class TrustedContactCreate(BaseModel):
-    contact_email: str
-    contact_name: str
-    access_level: str = "read"   # "read" | "full"
+    contact_email: EmailStr
+    contact_name: NonEmptyStr = Field(..., min_length=1, max_length=255)
+    access_level: AccessLevel = "read"
 
 class TrustedContactUpdate(BaseModel):
-    contact_name: Optional[str] = None
-    access_level: Optional[str] = None
-    status: Optional[str] = None  # "pending" | "accepted" | "revoked"
+    contact_name: OptionalNonEmptyStr = Field(None, min_length=1, max_length=255)
+    access_level: Optional[AccessLevel] = None
+    status: Optional[ContactStatus] = None
 
 class TrustedContactResponse(BaseModel):
     id: str
@@ -62,14 +70,13 @@ class TrustedContactResponse(BaseModel):
 # ── Follow-ups ───────────────────────────────────────────────────────────────
 
 class FollowUpCreate(BaseModel):
-    health_record_id: str
-    what: str
-    when_text: Optional[str] = None
+    what: NonEmptyStr = Field(..., min_length=1, max_length=1000)
+    when_text: OptionalNonEmptyStr = None
     due_date: Optional[date] = None
 
 class FollowUpUpdate(BaseModel):
-    what: Optional[str] = None
-    when_text: Optional[str] = None
+    what: OptionalNonEmptyStr = Field(None, min_length=1, max_length=1000)
+    when_text: OptionalNonEmptyStr = None
     due_date: Optional[date] = None
     completed: Optional[bool] = None
 
@@ -87,17 +94,17 @@ class FollowUpResponse(BaseModel):
 # ── Providers ────────────────────────────────────────────────────────────────
 
 class ProviderCreate(BaseModel):
-    name: str
-    specialty: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
-    fhir_provider_id: Optional[str] = None
+    name: NonEmptyStr = Field(..., min_length=1, max_length=255)
+    specialty: OptionalNonEmptyStr = None
+    phone: OptionalNonEmptyStr = None
+    address: OptionalNonEmptyStr = None
+    fhir_provider_id: OptionalNonEmptyStr = None
 
 class ProviderUpdate(BaseModel):
-    name: Optional[str] = None
-    specialty: Optional[str] = None
-    phone: Optional[str] = None
-    address: Optional[str] = None
+    name: OptionalNonEmptyStr = Field(None, min_length=1, max_length=255)
+    specialty: OptionalNonEmptyStr = None
+    phone: OptionalNonEmptyStr = None
+    address: OptionalNonEmptyStr = None
 
 class ProviderResponse(BaseModel):
     id: str

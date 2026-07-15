@@ -51,25 +51,27 @@ class TestPatientProfileValidation:
         assert resp.status_code == 400
 
 
+def _ensure_profile(client: httpx.Client, token: str, full_name: str, preferred_language: str) -> None:
+    """Create or complete a profile via POST (handles stub rows and missing rows)."""
+    payload = {
+        "full_name": full_name,
+        "preferred_language": preferred_language,
+        "explanation_level": "plain",
+    }
+    resp = client.post(PROFILE_URL, json=payload, headers=auth_headers(token))
+    if resp.status_code == 409:
+        resp = client.patch(PROFILE_URL, json=payload, headers=auth_headers(token))
+    assert resp.status_code in (200, 201), resp.text
+
+
 class TestPatientProfileOwnership:
     @pytest.fixture(scope="class", autouse=True)
     def setup_profiles(self, request, client):
         request.cls.token_a = login(client, USER_A)
         request.cls.token_b = login(client, USER_B)
 
-        patch_resp = client.patch(
-            PROFILE_URL,
-            json={"full_name": "User A Profile", "preferred_language": "en"},
-            headers=auth_headers(request.cls.token_a),
-        )
-        assert patch_resp.status_code == 200, patch_resp.text
-
-        patch_resp = client.patch(
-            PROFILE_URL,
-            json={"full_name": "User B Profile", "preferred_language": "es"},
-            headers=auth_headers(request.cls.token_b),
-        )
-        assert patch_resp.status_code == 200, patch_resp.text
+        _ensure_profile(client, request.cls.token_a, "User A Profile", "en")
+        _ensure_profile(client, request.cls.token_b, "User B Profile", "es")
 
     def test_user_a_gets_own_profile(self, client: httpx.Client):
         resp = client.get(PROFILE_URL, headers=auth_headers(self.token_a))

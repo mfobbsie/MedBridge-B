@@ -18,11 +18,14 @@ from postgrest.exceptions import APIError
 
 from app.database import get_supabase
 from app.middleware.auth import get_current_user
+from app.schemas.errors import GENERIC_INTERNAL_ERROR_MESSAGE
 from app.schemas.medications import (
     MedicationCreate,
     MedicationResponse,
     MedicationUpdate,
+    MedicationStatus,
 )
+from app.utils.validation import UuidStr
 
 router = APIRouter(prefix="/medications", tags=["Medications"])
 logger = logging.getLogger(__name__)
@@ -42,7 +45,7 @@ def _get_owned_medication(supabase, medication_id: str, user_id: str) -> dict:
         logger.exception("Failed to retrieve medication from database: %s", e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to retrieve medication.",
+            detail=GENERIC_INTERNAL_ERROR_MESSAGE,
         ) from e
 
     if result is None or not result.data:
@@ -52,29 +55,38 @@ def _get_owned_medication(supabase, medication_id: str, user_id: str) -> dict:
 
 @router.get("", response_model=list[MedicationResponse])
 async def list_medications(
-    status_filter: str | None = Query(None, alias="status"),
+    status_filter: MedicationStatus | None = Query(None, alias="status"),
     is_active: bool | None = Query(None),
     user: dict = Depends(get_current_user),
 ):
     """Return all medications for the authenticated user."""
     supabase = get_supabase()
-    query = (
-        supabase.table("medications")
-        .select("*")
-        .eq("user_id", user["id"])
-    )
-    if status_filter:
-        query = query.eq("status", status_filter)
-    elif is_active is not None:
-        query = query.eq("status", "active" if is_active else "stopped")
+    try:
+        query = (
+            supabase.table("medications")
+            .select("*")
+            .eq("user_id", user["id"])
+        )
+        if status_filter:
+            query = query.eq("status", status_filter)
+        elif is_active is not None:
+            query = query.eq("status", "active" if is_active else "stopped")
 
-    result = query.order("name").execute()
-    return result.data or []
+        result = query.order("name").execute()
+        return result.data or []
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Failed to list medications: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=GENERIC_INTERNAL_ERROR_MESSAGE,
+        )
 
 
 @router.get("/{medication_id}", response_model=MedicationResponse)
 async def get_medication(
-    medication_id: str,
+    medication_id: UuidStr,
     user: dict = Depends(get_current_user),
 ):
     """Retrieve a single medication by ID."""
@@ -91,15 +103,24 @@ async def create_medication(
     supabase = get_supabase()
     row = payload.to_db_row(medication_id=str(uuid.uuid4()), user_id=user["id"])
 
-    result = supabase.table("medications").insert(row).execute()
-    if not result.data:
-        raise HTTPException(status_code=500, detail="Failed to create medication.")
-    return result.data[0]
+    try:
+        result = supabase.table("medications").insert(row).execute()
+        if not result.data:
+            raise HTTPException(status_code=500, detail=GENERIC_INTERNAL_ERROR_MESSAGE)
+        return result.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Failed to create medication: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=GENERIC_INTERNAL_ERROR_MESSAGE,
+        )
 
 
 @router.put("/{medication_id}", response_model=MedicationResponse)
 async def replace_medication(
-    medication_id: str,
+    medication_id: UuidStr,
     payload: MedicationCreate,
     user: dict = Depends(get_current_user),
 ):
@@ -111,21 +132,30 @@ async def replace_medication(
     del row["id"]
     del row["user_id"]
 
-    result = (
-        supabase.table("medications")
-        .update(row)
-        .eq("id", medication_id)
-        .eq("user_id", user["id"])
-        .execute()
-    )
-    if not result.data:
-        raise HTTPException(status_code=500, detail="Failed to update medication.")
-    return result.data[0]
+    try:
+        result = (
+            supabase.table("medications")
+            .update(row)
+            .eq("id", medication_id)
+            .eq("user_id", user["id"])
+            .execute()
+        )
+        if not result.data:
+            raise HTTPException(status_code=500, detail=GENERIC_INTERNAL_ERROR_MESSAGE)
+        return result.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Failed to update medication: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=GENERIC_INTERNAL_ERROR_MESSAGE,
+        )
 
 
 @router.patch("/{medication_id}", response_model=MedicationResponse)
 async def update_medication(
-    medication_id: str,
+    medication_id: UuidStr,
     payload: MedicationUpdate,
     user: dict = Depends(get_current_user),
 ):
@@ -137,24 +167,40 @@ async def update_medication(
     if not updates:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields provided to update.")
 
-    result = (
-        supabase.table("medications")
-        .update(updates)
-        .eq("id", medication_id)
-        .eq("user_id", user["id"])
-        .execute()
-    )
-    if not result.data:
-        raise HTTPException(status_code=500, detail="Failed to update medication.")
-    return result.data[0]
+    try:
+        result = (
+            supabase.table("medications")
+            .update(updates)
+            .eq("id", medication_id)
+            .eq("user_id", user["id"])
+            .execute()
+        )
+        if not result.data:
+            raise HTTPException(status_code=500, detail=GENERIC_INTERNAL_ERROR_MESSAGE)
+        return result.data[0]
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Failed to update medication: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=GENERIC_INTERNAL_ERROR_MESSAGE,
+        )
 
 
 @router.delete("/{medication_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_medication(
-    medication_id: str,
+    medication_id: UuidStr,
     user: dict = Depends(get_current_user),
 ):
     """Delete a medication."""
     supabase = get_supabase()
     _get_owned_medication(supabase, medication_id, user["id"])
-    supabase.table("medications").delete().eq("id", medication_id).eq("user_id", user["id"]).execute()
+    try:
+        supabase.table("medications").delete().eq("id", medication_id).eq("user_id", user["id"]).execute()
+    except Exception as e:
+        logger.exception("Failed to delete medication: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=GENERIC_INTERNAL_ERROR_MESSAGE,
+        )
