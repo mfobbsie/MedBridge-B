@@ -1,7 +1,8 @@
 import { useDocumentsDomain } from "../hooks/useDocumentsDomain"
+import { DeleteConfirm } from "./DeleteConfirm";
 import { ErrorState } from "./ErrorState";
 import { LoadingSpinner } from "./LoadingSpinner";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 
 interface UploadDocumentsProps {
@@ -15,6 +16,10 @@ export const UploadDocuments = ({ selectedDocumentId, onSelectDocument }: Upload
     const { data: documents, actions, flags, viewConfigs } = useDocumentsDomain(selectedDocumentId || undefined, onSelectDocument);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const [deleteId, setDeleteId] = useState<string | null>(null);
+
+
+
     if (flags.isPending) return <LoadingSpinner />;
     if (flags.hasError) return <ErrorState error={flags.errorMessage} />;
 
@@ -25,7 +30,7 @@ export const UploadDocuments = ({ selectedDocumentId, onSelectDocument }: Upload
     const processFiles = (files: FileList | null) => {
         if (files && files.length > 0) {
             const selectedFile = files[0];
-            
+
             // ✅ Intercept and cache file locally using object URLs
             const localBlobUrl = URL.createObjectURL(selectedFile);
             localPdfCache[selectedFile.name] = localBlobUrl;
@@ -60,13 +65,13 @@ export const UploadDocuments = ({ selectedDocumentId, onSelectDocument }: Upload
                 onClick={handleContainerClick}
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
-                style={{ 
+                style={{
                     cursor: "pointer",
-                    border: "2px dashed #3182ce",    
-                    backgroundColor: "#f7fafc",       
-                    padding: "40px 20px",             
-                    borderRadius: "8px",              
-                    textAlign: "center"               
+                    border: "2px dashed #3182ce",
+                    backgroundColor: "#f7fafc",
+                    padding: "40px 20px",
+                    borderRadius: "8px",
+                    textAlign: "center"
                 }}
             >
                 <input
@@ -92,12 +97,13 @@ export const UploadDocuments = ({ selectedDocumentId, onSelectDocument }: Upload
                 <div className="documents-grid" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                     {documents.documentList?.map((doc) => {
                         const isSelected = selectedDocumentId === doc.document_id;
+                        const isPromptingDelete = deleteId === doc.document_id;
 
                         return (
-                            <div 
-                                key={doc.document_id} 
+                            <div
+                                key={doc.document_id}
                                 className={`document-card ${isSelected ? 'active-card' : ''}`}
-                                onClick={() => onSelectDocument(doc.document_id)} 
+                                onClick={() => onSelectDocument(doc.document_id)}
                                 style={{
                                     display: "flex",
                                     justifyContent: "space-between",
@@ -116,11 +122,25 @@ export const UploadDocuments = ({ selectedDocumentId, onSelectDocument }: Upload
                                         {new Date(doc.uploaded_at).toLocaleDateString()}
                                     </p>
                                 </div>
-                                <button
+
+                                {isPromptingDelete ? (
+                                    <div onClick={(e) => e.stopPropagation()}>
+                                        <DeleteConfirm
+                                            id={doc.document_id}
+                                            type="document"
+                                            onCancel={() => setDeleteId(null)}
+                                            onDeleteConfirm={(id) => {
+                                                actions.deleteFile(id)
+                                                setDeleteId(null)
+                                            }}
+                                        />
+                                    </div>
+
+                                ) : (<button
                                     className="delete-document-btn"
                                     onClick={(event) => {
                                         event.stopPropagation();
-                                        actions.deleteFile(doc.document_id);
+                                        setDeleteId(doc.document_id);
                                     }}
                                     disabled={flags.isDeletingFile === doc.document_id}
                                     style={{
@@ -132,6 +152,8 @@ export const UploadDocuments = ({ selectedDocumentId, onSelectDocument }: Upload
                                 >
                                     {flags.isDeletingFile === doc.document_id ? "..." : "🗑️"}
                                 </button>
+                                )}
+
                             </div>
                         );
                     })}
