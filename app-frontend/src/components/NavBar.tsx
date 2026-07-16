@@ -3,6 +3,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 import type { ReactNode } from "react";
 import { useLogout } from "../api/auth.queries";
 import { useAuth } from "../context/AuthContext";
+import {useModal} from "../context/ModalContext"
+import {AuthContainer} from "./AuthContainer";
 import { useState } from "react";
 import "./NavBar.css";
 
@@ -12,6 +14,11 @@ export const NavBar = (): ReactNode => {
   const logoutMutation = useLogout();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+
+  const handleLogin = () => {
+    setIsOpen(false);
+    openModal(<AuthContainer />);
+  };
 
   const handleLogout = () => {
     logoutMutation.mutate();
