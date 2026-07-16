@@ -127,7 +127,7 @@
 
 /* DANGER BUTTON — themed with teal + navy hover */
 .modal-delete {
-  padding: 12px 24px;
+  padding: 6px 18px;
   font-size: 15px;
   font-weight: 600;
   background-color: #3ABFBF; /* teal accent */

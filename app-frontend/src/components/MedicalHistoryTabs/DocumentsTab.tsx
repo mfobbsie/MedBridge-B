@@ -9,14 +9,18 @@ interface DocumentsTabProps {
 export default function DocumentsTab({
   documents,
   onEditDocument,
-  onDeleteDocument,
 }: DocumentsTabProps) {
+  const sortedDocuments = [...documents].sort(
+    (a, b) =>
+      new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime(),
+  );
+
   return (
     <div>
       <h2>Uploaded Documents</h2>
 
-      {documents.length ? (
-        documents.map((doc) => (
+      {sortedDocuments.length ? (
+        sortedDocuments.map((doc) => (
           <div key={doc.document_id} className="list-row">
             <span>
               <a
@@ -31,7 +35,7 @@ export default function DocumentsTab({
               {doc.status} ({new Date(doc.uploaded_at).toLocaleDateString()})
             </span>
 
-            <button className="edit-button" onClick={() => onEditDocument(doc)}>
+            <button className="modal-delete" onClick={() => onEditDocument(doc)}>
               delete
             </button>
           </div>
@@ -42,3 +46,4 @@ export default function DocumentsTab({
     </div>
   );
 }
+
