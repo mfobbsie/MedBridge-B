@@ -6,6 +6,7 @@ import {
   useReplaceMedication,
   useUpdateMedication,
 } from "../api/medication.queries";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useMedicationDomain = (medication_id?: string) => {
   const {
@@ -105,6 +106,8 @@ export const useMedicationDomain = (medication_id?: string) => {
     },
   };
 
+  const queryClient = useQueryClient();
+
   return {
     data: {
       medicationList: medicationListData || [],
@@ -128,13 +131,36 @@ export const useMedicationDomain = (medication_id?: string) => {
     },
 
     actions: {
-      addMedication: (body: any) => createMutation(body),
+      addMedication: (body: any) =>
+        createMutation(body, {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["medications"] });
+          },
+        }),
       modifyMedication: (medication_id: string, body: any) =>
-        updateMutation({ medication_id, body }),
+        updateMutation(
+          { medication_id, body },
+          {
+            onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: ["medications"] });
+            },
+          },
+        ),
       replaceMedication: (medication_id: string, body: any) =>
-        replaceMutation({ medication_id, body }),
+        replaceMutation(
+          { medication_id, body },
+          {
+            onSuccess: () => {
+              queryClient.invalidateQueries({ queryKey: ["medications"] });
+            },
+          },
+        ),
       removeMedication: (medication_id: string) =>
-        deleteMutation(medication_id),
+        deleteMutation(medication_id, {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["medications"] });
+          },
+        }),
     },
 
     viewConfigs,

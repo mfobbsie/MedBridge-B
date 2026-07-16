@@ -1,5 +1,5 @@
 // src/components/MedicalHistoryModals/EditMedicationModal.tsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMedicationDomain } from "../../hooks/useMedicationDomain";
 import "./Modal.css";
 import "../../main.css";
@@ -31,14 +31,6 @@ export default function MedicationModal({
   const [frequency, setFrequency] = useState(medication?.frequency || "");
   const [startDate, setStartDate] = useState(medication?.start_date || "");
   const [isActive, setIsActive] = useState(medication?.is_active ?? true);
-
-  useEffect(() => {
-    if (isOpen && !flags.isUpdating && !flags.hasError) {
-      onClose();
-    }
-  }, [flags.isUpdating, flags.hasError, isOpen, onClose]);
-
-  if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,7 +140,7 @@ export default function MedicationModal({
             <>
               <button
                 type="button"
-                className="danger-button"
+                className="modal-delete"
                 onClick={handleStopMedication}
               >
                 Stop Medication
@@ -156,7 +148,7 @@ export default function MedicationModal({
 
               <button
                 type="button"
-                className="danger-button"
+                className="modal-delete"
                 onClick={handleDeleteMedication}
               >
                 Delete Medication
@@ -169,7 +161,7 @@ export default function MedicationModal({
           )}
         </form>
 
-        <button className="modal-close" onClick={onClose}>
+        <button className="modal-cancel" onClick={onClose}>
           Close
         </button>
       </div>

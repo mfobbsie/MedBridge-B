@@ -151,8 +151,11 @@ const handleEditMedication = (med: MedicationResponse | null) => {
             <MedicationsTab
               current={currentMedications}
               past={pastMedications}
-              onEditMedication={handleEditMedication}
-              onAddMedication={handleAddMedication}
+              onEditMedication={(med) => {
+                setEditingMedication(med);
+                setShowEditModal(true); 
+              }}
+              onAddMedication={() => setShowAddModal(true)}
             />
           )}
         </div>
