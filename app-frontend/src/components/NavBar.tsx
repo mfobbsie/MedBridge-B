@@ -7,8 +7,6 @@ import {useModal} from "../context/ModalContext"
 import {AuthContainer} from "./AuthContainer";
 import { useState } from "react";
 import "./NavBar.css";
-import { useModal } from "../context/ModalContext";
-import { AuthContainer } from "./AuthContainer";
 
 export const NavBar = (): ReactNode => {
   const { token } = useAuth();
@@ -27,13 +25,6 @@ export const NavBar = (): ReactNode => {
     setIsOpen(false);
     navigate("/");
   };
-
-  const handleLogin = () => {
-    setIsOpen(false);
-   openModal(<AuthContainer />);
-  };
-
-
 
   return (
     <nav className="navbar">

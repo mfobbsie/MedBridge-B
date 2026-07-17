@@ -4,12 +4,11 @@ import { apiHelper } from "./apiHelper"
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 export interface UserSettingsResponse {
-    id: string;
-    user_id: string;
-    allow_trusted_contacts: boolean;
-    allow_mychart_integration: boolean;
-    enable_reminders: boolean;
-    updated_at: string;
+  id: string;
+  allow_trusted_contacts: boolean;
+  allow_mychart_integration: boolean;
+  enable_reminders: boolean;
+  updated_at: string;
 }
 
 export interface UpdateUserSettings {
