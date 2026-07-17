@@ -1,23 +1,47 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiHelper } from "./apiHelper";
+import type { UserProfile } from "../types/auth";
 
-export interface UserProfileResponse {
-  id: string;
-  name: string;
-  email: string;
-  language?: string;
-  created_at: string;
+export interface UpdateUserProfilePayload {
+  full_name?: string;
+  email?: string;
+  preferred_language?: string;
+  explanation_level?: number;
 }
 
-export const useGetUserProfile = (user_id: string) => {
-  return useQuery<UserProfileResponse>({
-    queryKey: ["user-profile", user_id],
-    queryFn: () => {
-      return apiHelper({
-        url: `http://localhost:8000/user/profile?user_id=${user_id}`,
+// GET patient profile
+export const useGetUserProfile = () => {
+  return useQuery<UserProfile>({
+    queryKey: ["patient-profile"],
+    queryFn: () =>
+      apiHelper({
+        url: "http://localhost:8000/patient-profile",
         method: "GET",
         body: null,
+      }),
+  });
+};
+
+// PATCH patient profile
+export const useUpdateUserProfile = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<UserProfile, Error, UpdateUserProfilePayload>({
+    mutationFn: (body) =>
+      apiHelper({
+        url: "http://localhost:8000/patient-profile",
+        method: "PATCH",
+        body,
+      }),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["patient-profile"],
       });
+    },
+
+    onError: (error) => {
+      console.error("Failed to update user profile:", error);
     },
   });
 };
