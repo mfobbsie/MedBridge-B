@@ -2,15 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { TrustedContactCreate, TrustedContactResponse, TrustedContactUpdate } from "../types/features";
 import { apiHelper } from "./apiHelper";
 
-
-
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export const useListTrustedContacts = () => {
     return useQuery<TrustedContactResponse[]>({
         queryKey: ["trusted-contacts"],
         queryFn: () => {
             return apiHelper({
-                url: "http://localhost:8000/trusted-contacts",
+                url: `${BASE_URL}/trusted-contacts`,
                 method: "GET",
                 body: null
             })
@@ -18,13 +17,12 @@ export const useListTrustedContacts = () => {
     })
 }
 
-
 export const useAddTrustedContact = () => {
     const queryClient = useQueryClient();
     return useMutation<TrustedContactResponse, Error, TrustedContactCreate>({
         mutationFn: (body) => {
             return apiHelper({
-                url: "http://localhost:8000/trusted-contacts",
+                url: `${BASE_URL}/trusted-contacts`,
                 method: "POST",
                 body: body
             })
@@ -40,13 +38,12 @@ export const useAddTrustedContact = () => {
     })
 }
 
-
 export const useUpdateTrustedContact = () => {
     const queryClient = useQueryClient();
     return useMutation<TrustedContactResponse, Error, { contact_id: string, body: TrustedContactUpdate }>({
         mutationFn: ({ contact_id, body }) => {
             return apiHelper({
-                url: `http://localhost:8000/trusted-contacts/${contact_id}`,
+                url: `${BASE_URL}/trusted-contacts/${contact_id}`,
                 method: "PATCH",
                 body: body
             })
@@ -62,13 +59,12 @@ export const useUpdateTrustedContact = () => {
     })
 }
 
-
 export const useRemoveTrustedContact = () => {
     const queryClient = useQueryClient();
     return useMutation<void, Error, string>({
         mutationFn: ( contact_id:string ) => {
             return apiHelper({
-                url: `http://localhost:8000/trusted-contacts/${contact_id}`,
+                url: `${BASE_URL}/trusted-contacts/${contact_id}`,
                 method: "DELETE",
                 body:null
             })

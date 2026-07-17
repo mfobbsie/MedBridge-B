@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiHelper } from "./apiHelper";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 export interface AppConfig {
     app: {
         name: string;
@@ -37,7 +39,7 @@ export const useGetApplicationConfig = () => {
         queryKey: ["config"],
         queryFn: () => {
             return apiHelper({
-                url: "http://localhost:8000/app/config",
+                url: `${BASE_URL}/app/config`,
                 method: "GET",
                 body: null,
             });

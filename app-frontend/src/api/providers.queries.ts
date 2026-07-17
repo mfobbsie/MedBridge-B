@@ -2,15 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiHelper } from "./apiHelper";
 import type { ProviderCreate, ProviderResponse, ProviderUpdate } from "../types/features";
 
-
-
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export const useListProviders = () => {
     return useQuery<ProviderResponse[]>({
         queryKey: ["providers"],
         queryFn: () => {
             return apiHelper({
-                url: "http://localhost:8000/providers",
+                url: `${BASE_URL}/providers`,
                 method: "GET",
                 body: null
             })
@@ -18,13 +17,12 @@ export const useListProviders = () => {
     })
 }
 
-
 export const useAddProvider = () => {
     const queryClient = useQueryClient();
     return useMutation<ProviderResponse, Error, ProviderCreate>({
         mutationFn: (body) => {
             return apiHelper({
-                url: "http://localhost:8000/providers",
+                url: `${BASE_URL}/providers`,
                 method: "POST",
                 body: body
             })
@@ -40,13 +38,12 @@ export const useAddProvider = () => {
     })
 }
 
-
 export const useUpdateProvider = () => {
     const queryClient = useQueryClient();
     return useMutation<ProviderResponse, Error, { provider_id: string, body: ProviderUpdate }>({
         mutationFn: ({ provider_id, body }) => {
             return apiHelper({
-                url: `http://localhost:8000/providers/${provider_id}`,
+                url: `${BASE_URL}/providers/${provider_id}`,
                 method: "PATCH",
                 body: body
             })
@@ -62,13 +59,12 @@ export const useUpdateProvider = () => {
     })
 }
 
-
 export const useDeleteProvider = () => {
     const queryClient = useQueryClient();
     return useMutation<void, Error, string>({
         mutationFn: ( provider_id:string ) => {
             return apiHelper({
-                url: `http://localhost:8000/providers/${provider_id}`,
+                url: `${BASE_URL}/providers/${provider_id}`,
                 method: "DELETE",
                 body:null
             })

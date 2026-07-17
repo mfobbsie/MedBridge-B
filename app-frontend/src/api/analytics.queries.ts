@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiHelper } from "./apiHelper";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 export interface FeedbackSubmit {
   summary_id: string;
   rating: number;
@@ -29,7 +31,7 @@ export const useSubmitFeedback = (userId: string = "demo-user-id") => {
   return useMutation<void, Error, FeedbackSubmit>({
     mutationFn: (body: FeedbackSubmit) => {
       return apiHelper({
-        url: "http://localhost:8000/analytics/feedback",
+        url: `${BASE_URL}/analytics/feedback`,
         method: "POST",
         body: body,
         tokenOverride: userId,
@@ -51,7 +53,7 @@ export const useLogEvent = (userId: string = "demo-user-id") => {
   return useMutation<void, Error, EventLog>({
     mutationFn: (body: EventLog) => {
       return apiHelper({
-        url: "http://localhost:8000/analytics/events",
+        url: `${BASE_URL}/analytics/events`,
         method: "POST",
         body: body,
         tokenOverride: userId,
@@ -75,7 +77,7 @@ export const useUpdateUserSettings = (userId: string = "demo-user-id") => {
   return useMutation<void, Error, UserSettingsUpdate>({
     mutationFn: (body: UserSettingsUpdate) => {
       return apiHelper({
-        url: "http://localhost:8000/analytics/settings",
+        url: `${BASE_URL}/analytics/settings`,
         method: "PATCH",
         body: body,
         tokenOverride: userId,
@@ -101,7 +103,7 @@ export const useGetUserSettings = (userId: string = "demo-user-id") => {
     queryKey: ["analytics", "settings", userId],
     queryFn: () => {
       return apiHelper({
-        url: "http://localhost:8000/analytics/settings",
+        url: `${BASE_URL}/analytics/settings`,
         method: "GET",
         body: null,
         tokenOverride: userId,
@@ -116,7 +118,7 @@ export const usePatientDashboard = (userId: string = "demo-user-id") => {
     queryKey: ["analytics", "dashboard", userId, "patient"],
     queryFn: () => {
       return apiHelper({
-        url: "http://localhost:8000/analytics/dashboard/patient",
+        url: `${BASE_URL}/analytics/dashboard/patient`,
         method: "GET",
         body: null,
         tokenOverride: userId,
@@ -131,7 +133,7 @@ export const useStakeholderDashboard = (userId: string = "demo-user-id") => {
     queryKey: ["analytics", "dashboard", userId, "stakeholder"],
     queryFn: () => {
       return apiHelper({
-        url: "http://localhost:8000/analytics/dashboard/stakeholder",
+        url: `${BASE_URL}/analytics/dashboard/stakeholder`,
         method: "GET",
         body: null,
         tokenOverride: userId,
@@ -146,7 +148,7 @@ export const useTeamDashboard = (userId: string = "demo-user-id") => {
     queryKey: ["analytics", "dashboard", userId, "team"],
     queryFn: () => {
       return apiHelper({
-        url: "http://localhost:8000/analytics/dashboard/team",
+        url: `${BASE_URL}/analytics/dashboard/team`,
         method: "GET",
         body: null,
         tokenOverride: userId,
@@ -163,7 +165,7 @@ export const useProviderReadinessDashboard = (
     queryKey: ["analytics", "dashboard", userId, "provider-readiness"],
     queryFn: () => {
       return apiHelper({
-        url: "http://localhost:8000/analytics/dashboard/provider-readiness",
+        url: `${BASE_URL}/analytics/dashboard/provider-readiness`,
         method: "GET",
         body: null,
         tokenOverride: userId,

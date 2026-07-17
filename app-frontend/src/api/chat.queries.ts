@@ -4,6 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import type { FeedbackRequest, ChatResponse, ChatRequest, UnderstandingResponse, UnderstandingRequest } from "../types/documents";
 import { apiHelper } from "./apiHelper";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 export const useStreamChat = () => {
     const { token } = useAuth();
 
@@ -23,7 +25,7 @@ export const useStreamChat = () => {
         setAiActive(true);
         setErrors(null);
         const safeMessage = encodeURIComponent(message)
-        const url = `http://localhost:8000/documents/${document_id}/chat/stream?message=${safeMessage}&token=${token}`;
+        const url = `${BASE_URL}/documents/${document_id}/chat/stream?message=${safeMessage}&token=${token}`;
 
         const eventSource = new EventSource(url);
         eventSourceRef.current = eventSource;
@@ -96,7 +98,7 @@ export const useRateMessage = () => {
     return useMutation<string, Error, { message_id: string, body: FeedbackRequest }>({
         mutationFn: ({ message_id, body }) => {
             return apiHelper({
-                url: `http://localhost:8000/chat/${message_id}/rating`,
+                url: `${BASE_URL}/chat/${message_id}/rating`,
                 method: "PATCH",
                 body: body,
             })
@@ -120,7 +122,7 @@ export const useGetChatHistory = (document_id?: string) => {
         queryFn: () => {
             if(!document_id) throw new Error("Document ID is required.");
             return apiHelper({
-                url: `http://localhost:8000/documents/${document_id}/chat`,
+                url: `${BASE_URL}/documents/${document_id}/chat`,
                 method: "GET",
             })
         },
@@ -135,7 +137,7 @@ export const useAskQuestion = () => {
     return useMutation<ChatResponse, Error, { document_id: string, body: ChatRequest }>({
         mutationFn: ({ document_id, body }) => {
             return apiHelper({
-                url: `http://localhost:8000/documents/${document_id}/chat`,
+                url: `${BASE_URL}/documents/${document_id}/chat`,
                 method: "POST",
                 body: body,
             })
@@ -157,7 +159,7 @@ export const useRateUnderstanding = () => {
     return useMutation<UnderstandingResponse, Error, { summary_id: string, body: UnderstandingRequest }>({
         mutationFn: ({ summary_id, body }) => {
             return apiHelper({
-                url: `http://localhost:8000/summaries/${summary_id}/understanding`,
+                url: `${BASE_URL}/summaries/${summary_id}/understanding`,
                 method: "POST",
                 body: body,
             })
