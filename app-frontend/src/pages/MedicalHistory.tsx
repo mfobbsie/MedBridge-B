@@ -1,4 +1,3 @@
-// src/pages/MedicalHistory.tsx
 import { useState } from "react";
 import "../main.css";
 import "./MedicalHistory.css";
@@ -9,52 +8,74 @@ import { useDocumentsDomain } from "../hooks/useDocumentsDomain";
 import { useUserSettingsDomain } from "../hooks/useUserSettingsDomain";
 import { useUserProfileDomain } from "../hooks/useUserProfileDomain";
 import { useMedicationDomain } from "../hooks/useMedicationDomain";
-//import { useChartsDomain } from "../hooks/useChartsDomain";
 
-import type { UserProfile } from "../types/auth";
-import type { DocumentResponse } from "../types/documents";
+import ProfileSidebar from "../components/ProfileSidebar";
+import DocumentsTab from "../components/MedicalHistoryTabs/DocumentsTab";
+import MedicationsTab from "../components/MedicalHistoryTabs/MedicationsTab";
+import ChartsTab from "../components/MedicalHistoryTabs/ChartsTab";
+
+import UserProfileModal from "../components/MedicalHistoryModals/EditProfileModal";
+import TrustedContactModal from "../components/MedicalHistoryModals/EditContactModal";
+import ProviderModal from "../components/MedicalHistoryModals/EditProviderModal";
+import UserSettingsModal from "../components/MedicalHistoryModals/EditSettingsModal";
+import { DeleteDocumentModal } from "../components/MedicalHistoryModals/DeleteDocumentModal";
+import MedicationModal from "../components/MedicalHistoryModals/EditMedicationModal";
+import AddMedicationModal from "../components/MedicalHistoryModals/AddMedicationModal";
+
 import type {
-  TrustedContactResponse,
   ProviderResponse,
+  TrustedContactResponse,
 } from "../types/features";
+import type { DocumentResponse } from "../types/documents";
 import type { MedicationResponse } from "../types/medication";
 
 export const MedicalHistory = () => {
-  const user_id = "demo-user-id"; // TODO: replace with real auth user_id
 
   // DOMAIN HOOKS
-  const { data: profileDomain } = useUserProfileDomain(user_id);
-  const { data: documentsDomain } = useDocumentsDomain();
-  const { data: medicationsDomain } = useMedicationDomain(user_id);
-  //const { data: chartsDomain } = useChartsDomain(user_id);
+  const { data: profileDomain } = useUserProfileDomain();
+  const { data: documentsDomain, actions: documentActions } =
+    useDocumentsDomain();
+  const { data: medicationsDomain } = useMedicationDomain();
   const { data: contactsDomain } = useTrustedContactsDomain();
   const { data: providersDomain } = useProvidersDomain();
-  const { data: settingsDomain } = useUserSettingsDomain(user_id);
+  const { data: settingsDomain } = useUserSettingsDomain();
 
-  // TYPED DATA EXTRACTION
-  const profile = profileDomain?.profile as UserProfile | undefined;
-
-  const documents =
-    (documentsDomain?.documentList as DocumentResponse[] | undefined) ?? [];
-
-  const contacts =
-    (contactsDomain?.contactsList as TrustedContactResponse[] | undefined) ??
-    [];
-
-  const providers =
-    (providersDomain?.providersList as ProviderResponse[] | undefined) ?? [];
-
+  // DATA
+  const profile = profileDomain?.profile;
+  const documents = documentsDomain?.documentList ?? [];
+  const contacts = contactsDomain?.contactsList ?? [];
+  const providers = providersDomain?.providersList ?? [];
   const settings = settingsDomain?.settings;
 
-  // Medications domain sorts data into current/past arrays
-  const currentMedications =
-    (medicationsDomain?.current as MedicationResponse[] | undefined) ?? [];
-  const pastMedications =
-    (medicationsDomain?.past as MedicationResponse[] | undefined) ?? [];
+  const currentMedications = medicationsDomain?.current ?? [];
+  const pastMedications = medicationsDomain?.past ?? [];
 
-  // Charts endpoint still in development – keep placeholder
-  //const charts =
-  //(chartsDomain?.charts as unknown as MedicationResponse[] | undefined) ?? [];
+  // MODAL STATE
+  const [showProfileModal, setShowProfileModal] = useState(false);
+
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [editingContact, setEditingContact] =
+    useState<TrustedContactResponse | null>(null);
+
+  const [showProviderModal, setShowProviderModal] = useState(false);
+  const [editingProvider, setEditingProvider] =
+    useState<ProviderResponse | null>(null);
+
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [editingDocument, setEditingDocument] =
+    useState<DocumentResponse | null>(null);
+
+  const [showAddModal, setShowAddModal] = useState(false);
+const [showEditModal, setShowEditModal] = useState(false);
+  const [editingMedication, setEditingMedication] =
+    useState<MedicationResponse | null>(null);
+
+const mapAccessLevel = (level: string): "read" | "full" => {
+  return level === "read" ? "full" : "read";
+};
+
 
   const [activeTab, setActiveTab] = useState<
     "documents" | "charts" | "medications"
@@ -62,79 +83,29 @@ export const MedicalHistory = () => {
 
   return (
     <div className="medical-history-page">
-      {/* PROFILE SIDEBAR */}
-      <aside className="sidebar">
-        <h1 className="sidebar-title">Profile</h1>
+      <ProfileSidebar
+        profile={profile}
+        contacts={contacts}
+        providers={providers}
+        settings={settings}
+        onEditProfile={() => setShowProfileModal(true)}
+        onEditContact={(c) => {
+          setEditingContact(c);
+          setShowContactModal(true);
+        }}
+        onEditProvider={(provider) => {
+          setEditingProvider(provider ?? null);
+          setShowProviderModal(true);
+        }}
+        onEditSettings={() => setShowSettingsModal(true)}
+      />
 
-        <div className="sidebar-section">
-          <h2>User Information</h2>
-          <p>
-            Name: {profile?.full_name ?? "Unknown"} <br />
-            Email: {profile?.email ?? "Unknown"} <br />
-            Preferred Language: {profile?.preferred_language ?? "Unknown"}{" "}
-            <br />
-            Explanation Level: {profile?.explanation_level ?? "Unknown"}
-          </p>
-        </div>
-
-        <div className="sidebar-section">
-          <h2>Trusted Contacts</h2>
-          {contacts.length ? (
-            contacts.map((c) => (
-              <p key={c.id}>
-                {c.contact_name} ({c.contact_email}) — {c.access_level}
-              </p>
-            ))
-          ) : (
-            <p>No trusted contacts added yet.</p>
-          )}
-        </div>
-
-        <div className="sidebar-section">
-          <h2>Medical Contacts</h2>
-          {providers.length ? (
-            providers.map((p) => (
-              <p key={p.id}>
-                {p.specialty ?? "General"}: {p.name}
-              </p>
-            ))
-          ) : (
-            <p>No providers on file.</p>
-          )}
-        </div>
-
-        <div className="sidebar-section">
-          <h2>Data Sharing</h2>
-          <p>
-            Trusted Contacts Sharing:{" "}
-            {settings?.allow_trusted_contacts ? "Yes" : "No"}
-            <br />
-            MyChart Integration:{" "}
-            {settings?.allow_mychart_integration ? "Enabled" : "Disabled"}
-            <br />
-            Reminders: {settings?.enable_reminders ? "On" : "Off"}
-          </p>
-        </div>
-
-        <div className="sidebar-section">
-          <h2>General Settings</h2>
-          <p>
-            Notifications: {settings?.enable_reminders ? "Yes" : "No"} <br />
-            Preferred Language: {profile?.preferred_language ?? "English"}{" "}
-            <br />
-            Delete Account: No
-          </p>
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT */}
       <main className="main-content">
         <h1 className="main-title">Medical History</h1>
         <p className="main-description">
           View your medical documents, charts, and medication history.
         </p>
 
-        {/* TAB BUTTONS */}
         <div className="tab-buttons">
           <button
             className={activeTab === "documents" ? "active" : ""}
@@ -142,14 +113,12 @@ export const MedicalHistory = () => {
           >
             Documents
           </button>
-
           <button
             className={activeTab === "charts" ? "active" : ""}
             onClick={() => setActiveTab("charts")}
           >
             Charts
           </button>
-
           <button
             className={activeTab === "medications" ? "active" : ""}
             onClick={() => setActiveTab("medications")}
@@ -158,73 +127,122 @@ export const MedicalHistory = () => {
           </button>
         </div>
 
-        {/* TAB CONTENT */}
         <div className="tab-content">
-          {/* DOCUMENTS TAB */}
           {activeTab === "documents" && (
-            <div>
-              <h2>Uploaded Documents</h2>
-              {documents.length ? (
-                documents.map((doc) => (
-                  <p key={doc.document_id}>
-                    {doc.file_name} — {doc.status} (
-                    {new Date(doc.uploaded_at).toLocaleDateString()})
-                  </p>
-                ))
-              ) : (
-                <p>No documents uploaded yet.</p>
-              )}
-            </div>
+            <DocumentsTab
+              documents={documents}
+              onEditDocument={(doc) => {
+                setEditingDocument(doc);
+                setShowDocumentModal(true);
+              }}
+              onDeleteDocument={(id) => documentActions.deleteFile(id)}
+            />
           )}
 
-          {/* CHARTS TAB */}
-          {activeTab === "charts" && (
-            <div>
-              <h2>Medical Charts</h2>
-              <p>
-                Charts are not yet available. This feature will be enabled once
-                the chart endpoints are ready.
-              </p>
-            </div>
-          )}
+          {activeTab === "charts" && <ChartsTab />}
 
-          {/* MEDICATIONS TAB */}
           {activeTab === "medications" && (
-            <div>
-              <h2>Medication History</h2>
-
-              <h3>Current Medications</h3>
-              {currentMedications.length ? (
-                currentMedications.map((med) => (
-                  <p key={med.id}>
-                    {med.name} — {med.dosage ?? med.dose ?? "Unknown dose"},{" "}
-                    {med.frequency ?? "Unknown frequency"} (
-                    {med.is_active ? "Active" : "Inactive"})
-                  </p>
-                ))
-              ) : (
-                <p>No current medications.</p>
-              )}
-
-              <h3>Past Medications</h3>
-              {pastMedications.length ? (
-                pastMedications.map((med) => (
-                  <p key={med.id}>
-                    {med.name} — {med.dosage ?? med.dose ?? "Unknown dose"}{" "}
-                    {med.end_date
-                      ? `(Ended: ${new Date(
-                          med.end_date,
-                        ).toLocaleDateString()})`
-                      : "(End date unknown)"}
-                  </p>
-                ))
-              ) : (
-                <p>No past medications.</p>
-              )}
-            </div>
+            <MedicationsTab
+              current={currentMedications}
+              past={pastMedications}
+              onEditMedication={(med) => {
+                setEditingMedication(med);
+                setShowEditModal(true);
+              }}
+              onAddMedication={() => setShowAddModal(true)}
+            />
           )}
         </div>
       </main>
+
+      {/* MODALS */}
+      {showProfileModal && (
+        <UserProfileModal
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          profile={profile}
+        />
+      )}
+
+      {showContactModal && (
+        <TrustedContactModal
+          isOpen={showContactModal}
+          onClose={() => setShowContactModal(false)}
+          mode={editingContact ? "edit" : "add"}
+          contact={
+            editingContact
+              ? {
+                  contact_id: editingContact.id,
+                  contact_name: editingContact.contact_name,
+                  contact_email: editingContact.contact_email,
+                  access_level: mapAccessLevel(editingContact.access_level),
+                }
+              : undefined
+          }
+        />
+      )}
+
+      {showProviderModal && (
+        <ProviderModal
+          isOpen={showProviderModal}
+          onClose={() => setShowProviderModal(false)}
+          mode={editingProvider ? "edit" : "add"}
+          provider={
+            editingProvider
+              ? {
+                  provider_id: editingProvider.id,
+                  name: editingProvider.name,
+                  specialty: editingProvider.specialty ?? "",
+                  phone: editingProvider.phone ?? "",
+                  email: "", // FIXED: ProviderResponse has no email field
+                }
+              : undefined
+          }
+        />
+      )}
+
+      {showSettingsModal && (
+        <UserSettingsModal
+          isOpen={showSettingsModal}
+          onClose={() => setShowSettingsModal(false)}
+          settings={settings}
+        />
+      )}
+
+      {showDocumentModal && editingDocument && (
+        <DeleteDocumentModal
+          documentName={editingDocument.file_name}
+          onConfirm={() => {
+            documentActions.deleteFile(editingDocument.document_id);
+            setShowDocumentModal(false);
+          }}
+          onCancel={() => setShowDocumentModal(false)}
+          isDeleting={false}
+        />
+      )}
+
+      {showAddModal && (
+        <AddMedicationModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+        />
+      )}
+
+      {showEditModal && editingMedication && (
+        <MedicationModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          mode="edit"
+          medication={{
+            med_id: editingMedication.id,
+            name: editingMedication.name,
+            dosage: editingMedication.dosage ?? "",
+            frequency: editingMedication.frequency ?? "",
+            start_date: editingMedication.start_date ?? "",
+            is_active: editingMedication.is_active,
+          }}
+        />
+      )}
     </div>
   );
 };
