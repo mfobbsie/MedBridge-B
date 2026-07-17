@@ -19,7 +19,6 @@ interface MedicationModalProps {
 }
 
 export default function MedicationModal({
-  isOpen,
   onClose,
   mode,
   medication,
