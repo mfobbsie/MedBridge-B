@@ -67,19 +67,13 @@ export const MedicalHistory = () => {
   const [editingDocument, setEditingDocument] =
     useState<DocumentResponse | null>(null);
 
-const [showAddModal, setShowAddModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
 const [showEditModal, setShowEditModal] = useState(false);
   const [editingMedication, setEditingMedication] =
     useState<MedicationResponse | null>(null);
 
-const handleAddMedication = () => {
-  setShowAddModal(true);
-};
-
-const handleEditMedication = (med: MedicationResponse | null) => {
-  if (!med) return; // safety
-  setEditingMedication(med);
-  setShowEditModal(true);
+const mapAccessLevel = (level: string): "read" | "full" => {
+  return level === "read" ? "full" : "read";
 };
 
 
@@ -99,8 +93,8 @@ const handleEditMedication = (med: MedicationResponse | null) => {
           setEditingContact(c);
           setShowContactModal(true);
         }}
-        onEditProvider={() => {
-          setEditingProvider(null);
+        onEditProvider={(provider) => {
+          setEditingProvider(provider ?? null);
           setShowProviderModal(true);
         }}
         onEditSettings={() => setShowSettingsModal(true)}
@@ -153,7 +147,7 @@ const handleEditMedication = (med: MedicationResponse | null) => {
               past={pastMedications}
               onEditMedication={(med) => {
                 setEditingMedication(med);
-                setShowEditModal(true); 
+                setShowEditModal(true);
               }}
               onAddMedication={() => setShowAddModal(true)}
             />
@@ -181,7 +175,7 @@ const handleEditMedication = (med: MedicationResponse | null) => {
                   contact_id: editingContact.id,
                   contact_name: editingContact.contact_name,
                   contact_email: editingContact.contact_email,
-                  access_level: Number(editingContact.access_level),
+                  access_level: mapAccessLevel(editingContact.access_level),
                 }
               : undefined
           }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUserProfileDomain } from "../../hooks/useUserProfileDomain";
 import "./Modal.css";
 import "../../main.css";
@@ -30,20 +30,27 @@ export default function EditProfileModal({
   const [explanationLevel, setExplanationLevel] = useState(
     profile?.explanation_level ?? "simple",
   );
+  // Sync when profile changes
+  useEffect(() => {
+    if (profile) {
+      setFullName(profile.full_name ?? "");
+      setEmail(profile.email ?? "");
+      setPreferredLanguage(profile.preferred_language ?? "English");
+      setExplanationLevel(profile.explanation_level ?? "simple");
+    }
+  }, [profile]);
 
-  if (!isOpen) return null;
+    if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    actions.updateProfile(
-      {
-        full_name: fullName,
-        email,
-        preferred_language: preferredLanguage,
-        explanation_level: explanationLevel,
-      }
-    );
+    actions.updateProfile({
+      full_name: fullName,
+      email,
+      preferred_language: preferredLanguage,
+      explanation_level: explanationLevel,
+    });
   };
 
   return (

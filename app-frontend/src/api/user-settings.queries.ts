@@ -10,9 +10,9 @@ export interface UserSettingsResponse {
 }
 
 export interface UpdateUserSettings {
-  allow_trusted_contacts: boolean | null;
-  allow_mychart_integration: boolean | null;
-  enable_reminders: boolean | null;
+  allow_trusted_contacts: boolean;
+  allow_mychart_integration: boolean;
+  enable_reminders: boolean;
 }
 
 // GET — backend extracts user from JWT

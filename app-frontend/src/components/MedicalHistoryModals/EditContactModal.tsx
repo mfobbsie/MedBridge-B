@@ -4,6 +4,8 @@ import { useTrustedContactsDomain } from "../../hooks/useTrustedContactsDomain";
 import "./Modal.css";
 import "../../main.css";
 
+type AccessLevel = "read" | "full";
+
 interface TrustedContactModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -12,7 +14,7 @@ interface TrustedContactModalProps {
     contact_id: string;
     contact_name: string;
     contact_email: string;
-    access_level: number;
+    access_level: AccessLevel;
   };
 }
 
@@ -27,7 +29,7 @@ export default function TrustedContactModal({
   const [name, setName] = useState(contact?.contact_name || "");
   const [email, setEmail] = useState(contact?.contact_email || "");
   const [accessLevel, setAccessLevel] = useState(
-    contact?.access_level?.toString() || "0",
+    contact?.access_level || "read",
   );
 
   if (!isOpen) return null;
@@ -39,7 +41,7 @@ export default function TrustedContactModal({
       actions.addContact({
         contact_name: name,
         contact_email: email,
-        access_level: Number(accessLevel),
+        access_level: accessLevel,
       });
       return;
     }
@@ -48,7 +50,7 @@ export default function TrustedContactModal({
       actions.updateContactPermissions(contact.contact_id, {
         contact_name: name,
         contact_email: email,
-        access_level: Number(accessLevel),
+        access_level: accessLevel,
       });
       return;
     }
@@ -84,10 +86,10 @@ export default function TrustedContactModal({
             Access Level
             <select
               value={accessLevel}
-              onChange={(e) => setAccessLevel(e.target.value)}
+              onChange={(e) => setAccessLevel(e.target.value as AccessLevel)}
             >
-              <option value="0">Basic Access</option>
-              <option value="1">Full Access</option>
+              <option value="read">Read Only</option>
+              <option value="full">Full Access</option>
             </select>
           </label>
 

@@ -15,7 +15,7 @@ export const useUserProfileDomain = () => {
     queryKey: ["user-profile"],
     queryFn: () =>
       apiHelper({
-        url: "http://localhost:8000/user/profile",
+        url: "http://localhost:8000/patient-profile",
         method: "GET",
       }),
   });
@@ -29,12 +29,12 @@ export const useUserProfileDomain = () => {
   } = useMutation<UserProfile, Error, UserProfileUpdate>({
     mutationFn: (body) =>
       apiHelper({
-        url: "http://localhost:8000/user/profile",
+        url: "http://localhost:8000/patient-profile",
         method: "PATCH",
         body,
       }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user-profile"] });
+      queryClient.invalidateQueries({ queryKey: ["patient-profile"] });
     },
   });
 

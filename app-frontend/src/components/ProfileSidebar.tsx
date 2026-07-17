@@ -60,7 +60,7 @@ export default function ProfileSidebar({
         <div className="sidebar-header">
           <h2>Trusted Contacts</h2>
           <button className="edit-button" onClick={() => onEditContact(null)}>
-            edit
+            + add contact
           </button>
         </div>
 
@@ -70,6 +70,9 @@ export default function ProfileSidebar({
               <span>
                 {c.contact_name} ({c.contact_email}) — {c.access_level}
               </span>
+              <button className="edit-button" onClick={() => onEditContact(c)}>
+                edit
+              </button>
             </div>
           ))
         ) : (
@@ -82,16 +85,17 @@ export default function ProfileSidebar({
         <div className="sidebar-header">
           <h2>Medical Contacts</h2>
           <button className="edit-button" onClick={() => onEditProvider(null)}>
-            edit
+            + add provider
           </button>
         </div>
+
         {providers.length ? (
           providers.map((p) => (
             <div key={p.id} className="list-row">
               <span>
                 {p.specialty ?? "General"}: {p.name}
               </span>
-              <button className="edit-button" onClick={() => onEditProvider(null)}>
+              <button className="edit-button" onClick={() => onEditProvider(p)}>
                 edit
               </button>
             </div>
@@ -101,20 +105,26 @@ export default function ProfileSidebar({
         )}
       </div>
 
-      {/* SETTINGS */}
+      {/* SETTINGS — MATCHES BACKEND */}
       <div className="sidebar-section">
         <div className="sidebar-header">
-          <h2>General Settings</h2>
+          <h3>Account Settings</h3>
           <button className="edit-button" onClick={onEditSettings}>
             edit
           </button>
         </div>
 
         <p>
-          Notifications: {settings?.enable_reminders ? "Yes" : "No"} <br />
-          Preferred Language: {profile?.preferred_language ?? "English"} <br />
-          Delete Account: No
+          Trusted Contacts:{" "}
+          {settings?.allow_trusted_contacts ? "Enabled" : "Disabled"}
         </p>
+
+        <p>
+          MyChart Integration:{" "}
+          {settings?.allow_mychart_integration ? "Enabled" : "Disabled"}
+        </p>
+
+        <p>Reminders: {settings?.enable_reminders ? "Enabled" : "Disabled"}</p>
       </div>
     </aside>
   );

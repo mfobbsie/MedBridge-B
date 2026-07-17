@@ -67,8 +67,25 @@ export const useUserSettingsDomain = () => {
       isActionInFlight: updatePending,
     },
     actions: {
-      saveSettings: (body: any) => updateMutation(body),
+      saveSettings: (body) => {
+        const patchBody: any = {};
+
+        if (body.allow_trusted_contacts !== undefined) {
+          patchBody.allow_trusted_contacts = body.allow_trusted_contacts;
+        }
+
+        if (body.allow_mychart_integration !== undefined) {
+          patchBody.allow_mychart_integration = body.allow_mychart_integration;
+        }
+
+        if (body.enable_reminders !== undefined) {
+          patchBody.enable_reminders = body.enable_reminders;
+        }
+
+        updateMutation(patchBody);
+      },
     },
+
     viewConfigs,
   };
 };
