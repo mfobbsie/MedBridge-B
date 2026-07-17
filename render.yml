@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: medbridge-backend
+    env: docker
+    plan: starter
+    dockerfilePath: ./app-backend/Dockerfile
+    autoDeploy: false
+    envVars:
+      - key: ENV
+        value: production
+      - key: PORT
+        value: 8000
