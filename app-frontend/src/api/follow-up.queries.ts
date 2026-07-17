@@ -2,12 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { FollowUpCreate, FollowUpResponse, FollowUpUpdate } from "../types/features";
 import { apiHelper } from "./apiHelper";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 export const useListFollowUp = (document_id: string) => {
     return useQuery<FollowUpResponse[]>({
         queryKey: ["documents", document_id, "follow-ups"],
         queryFn: () => {
             return apiHelper({
-                url: `http://localhost:8000/documents/${document_id}/follow-ups`,
+                url: `${BASE_URL}/documents/${document_id}/follow-ups`,
                 method: "GET",
                 body: null
             })
@@ -15,13 +17,12 @@ export const useListFollowUp = (document_id: string) => {
     })
 }
 
-
 export const useCreateFollowUp = () => {
     const queryClient = useQueryClient();
     return useMutation<FollowUpResponse, Error, { document_id: string, body: FollowUpCreate }>({
         mutationFn: ({ document_id, body }) => {
             return apiHelper({
-                url: `http://localhost:8000/documents/${document_id}/follow-ups`,
+                url: `${BASE_URL}/documents/${document_id}/follow-ups`,
                 method: "POST",
                 body: {
                     ...body,
@@ -40,13 +41,12 @@ export const useCreateFollowUp = () => {
     })
 }
 
-
 export const useUpdateFollowUp = () => {
     const queryClient = useQueryClient();
     return useMutation<FollowUpResponse, Error, { followup_id: string, body: FollowUpUpdate }>({
         mutationFn: ({ followup_id, body }) => {
             return apiHelper({
-                url: `http://localhost:8000/follow-ups/${followup_id}`,
+                url: `${BASE_URL}/follow-ups/${followup_id}`,
                 method: "PATCH",
                 body: body
             })
@@ -62,13 +62,12 @@ export const useUpdateFollowUp = () => {
     })
 }
 
-
 export const useDeleteFollowUp = () => {
     const queryClient = useQueryClient();
     return useMutation<void, Error, string>({
         mutationFn: (followup_id: string) => {
             return apiHelper({
-                url: `http://localhost:8000/follow-ups/${followup_id}`,
+                url: `${BASE_URL}/follow-ups/${followup_id}`,
                 method: "DELETE",
                 body: null
             })
@@ -84,13 +83,12 @@ export const useDeleteFollowUp = () => {
     })
 }
 
-
 export const useCompleteFollowUp = () => {
     const queryClient = useQueryClient();
     return useMutation<void, Error, string>({
         mutationFn: (followup_id: string) => {
             return apiHelper({
-                url: `http://localhost:8000/follow-ups/${followup_id}/complete`,
+                url: `${BASE_URL}/follow-ups/${followup_id}/complete`,
                 method: "POST",
                 body: null
             })

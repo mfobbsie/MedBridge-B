@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { apiHelper } from "./apiHelper"
 
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export interface UserSettingsResponse {
     id: string;
@@ -17,14 +18,12 @@ export interface UpdateUserSettings {
     enable_reminders: boolean | null;
 }
 
-
-
 export const useGetUserSettings = (user_id: string) => {
     return useQuery<UserSettingsResponse>({
         queryKey: ["user-settings", user_id],
         queryFn: () => {
             return apiHelper({
-                url: `http://localhost:8000/user-settings/?user_id=${user_id}`,
+                url: `${BASE_URL}/user-settings/?user_id=${user_id}`,
                 method: "GET",
                 body: null
             })
@@ -40,7 +39,7 @@ export const useUpdateUserSettings = (user_id: string) => {
     return useMutation<UserSettingsResponse, Error, UpdateUserSettings>({
         mutationFn: (body) => {
             return apiHelper({
-                url: `http://localhost:8000/user-settings/?user_id=${user_id}`,
+                url: `${BASE_URL}/user-settings/?user_id=${user_id}`,
                 method: "PATCH",
                 body: body
             })

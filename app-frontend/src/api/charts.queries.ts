@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiHelper } from "./apiHelper";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
+
 export interface ChartEntry {
   id: string;
   label: string;
@@ -17,7 +19,7 @@ export const useGetCharts = (user_id: string) => {
     queryKey: ["charts", user_id],
     queryFn: () => {
       return apiHelper({
-        url: `http://localhost:8000/charts?user_id=${user_id}`,
+        url: `${BASE_URL}/charts?user_id=${user_id}`,
         method: "GET",
         body: null,
       });

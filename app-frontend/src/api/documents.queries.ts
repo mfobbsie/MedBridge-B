@@ -2,13 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiHelper } from "./apiHelper";
 import { type SummaryResponse, type DocumentListResponse, type DocumentResponse, type UploadResponse, type PrepResponse, type DashboardResponse } from "../types/documents";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export const useUploadDocument = (onUploadComplete: (document_id: string) => void) => {
     const queryClient = useQueryClient();
     return useMutation<UploadResponse, Error, FormData>({
         mutationFn: (body: FormData) => {
             return apiHelper({
-                url: "http://localhost:8000/documents/upload",
+                url: `${BASE_URL}/documents/upload`,
                 method: "POST",
                 body: body,
             });
@@ -27,13 +28,12 @@ export const useUploadDocument = (onUploadComplete: (document_id: string) => voi
     })
 }
 
-
 export const useListDocuments = () => {
     return useQuery<DocumentListResponse>({
         queryKey: ["documents"],
         queryFn: () => {
             return apiHelper({
-                url: "http://localhost:8000/documents",
+                url: `${BASE_URL}/documents`,
                 method: "GET",
                 body: null,
             })
@@ -41,13 +41,12 @@ export const useListDocuments = () => {
     })
 }
 
-
 export const useGetDocument = (document_id: string) => {
     return useQuery<DocumentResponse>({
         queryKey: ["documents", document_id],
         queryFn: async () => {
                 return apiHelper({
-                    url: `http://localhost:8000/documents/${document_id}`,
+                    url: `${BASE_URL}/documents/${document_id}`,
                     method: "GET",
                     body: null,
                 })
@@ -65,13 +64,12 @@ export const useGetDocument = (document_id: string) => {
     })
 }
 
-
 export const useDeleteDocument = () => {
     const queryClient = useQueryClient();
     return useMutation<void, Error, string>({
         mutationFn: (document_id: string) => {
             return apiHelper({
-                url: `http://localhost:8000/documents/${document_id}`,
+                url: `${BASE_URL}/documents/${document_id}`,
                 method: "DELETE",
                 body: null,
             })
@@ -89,13 +87,12 @@ export const useDeleteDocument = () => {
     )
 }
 
-
 export const useGetSummary = (document_id: string) => {
     return useQuery<SummaryResponse>({
         queryKey: ["documents", document_id, "summary"],
         queryFn: () => {
             return apiHelper({
-                url: `http://localhost:8000/documents/${document_id}/summary`,
+                url: `${BASE_URL}/documents/${document_id}/summary`,
                 method: "GET",
                 body: null,
             })
@@ -109,13 +106,12 @@ export const useGetSummary = (document_id: string) => {
     })
 }
 
-
 export const useRegenerateSummary = () => {
     const queryClient = useQueryClient();
     return useMutation<SummaryResponse, Error, string>({
         mutationFn: (document_id: string) => {
             return apiHelper({
-                url: `http://localhost:8000/documents/${document_id}/summary`,
+                url: `${BASE_URL}/documents/${document_id}/summary`,
                 method: "POST",
                 body: null,
             })
@@ -131,16 +127,13 @@ export const useRegenerateSummary = () => {
     })
 }
 
-
-
-
 export const useGenerateAppointmentPrep = () => {
     const queryClient = useQueryClient();
 
     return useMutation<PrepResponse, Error, string>({
         mutationFn: (document_id) => {
             return apiHelper({
-                url: `http://localhost:8000/documents/${document_id}/prep`,
+                url: `${BASE_URL}/documents/${document_id}/prep`,
                 method: "POST",
                 body: null,
             })
@@ -157,15 +150,12 @@ export const useGenerateAppointmentPrep = () => {
     })
 }
 
-
-
-
 export const useDashboard = () => {
     return useQuery<DashboardResponse>({
         queryKey: ["documents", "dashboard"],
         queryFn: () => {
             return apiHelper({
-                url: "http://localhost:8000/dashboard",
+                url: `${BASE_URL}/dashboard`,
                 method: "GET",
                 body: null,
             })

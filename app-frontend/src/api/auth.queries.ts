@@ -3,7 +3,7 @@ import type { LoginRequest, AuthResponse, RegisterRequest } from "../types/auth"
 import { useAuth } from "../context/AuthContext";
 import { apiHelper } from "./apiHelper";
 
-
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export function useLogin() {
     const { login } = useAuth();
@@ -11,7 +11,7 @@ export function useLogin() {
     return useMutation({
         mutationFn: (credentials: LoginRequest) => {
             return apiHelper({
-                url: "http://localhost:8000/auth/login",
+                url: `${BASE_URL}/auth/login`,
                 method: "POST",
                 body: credentials
             })
@@ -37,7 +37,7 @@ export function useRegister() {
     return useMutation({
         mutationFn: (credentials: RegisterRequest) => {
             return apiHelper({
-                url: "http://localhost:8000/auth/register",
+                url: `${BASE_URL}/auth/register`,
                 method: "POST",
                 body: credentials
             })
@@ -62,7 +62,7 @@ export function useLogout() {
     return useMutation({
         mutationFn: () => {
             return apiHelper({
-                url: "http://localhost:8000/auth/logout",
+                url: `${BASE_URL}/auth/logout`,
                 method: "POST",
                 body: null
 

@@ -2,15 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { type MedicationCreate, type MedicationFilters, type MedicationResponse, type MedicationUpdate } from "../types/medication"
 import { apiHelper } from "./apiHelper"
 
-
-
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export const useListMedications = (filters?: MedicationFilters) => {
     return useQuery<MedicationResponse[]>({
         queryKey: ["medications", filters],
         queryFn: () => {
             return apiHelper({
-                url: "http://localhost:8000/medications",
+                url: `${BASE_URL}/medications`,
                 method: "GET",
                 params: filters as any
             })
@@ -24,7 +23,7 @@ export const useCreateMedication = () => {
     return useMutation<MedicationResponse, Error, MedicationCreate>({
         mutationFn: (body) => {
             return apiHelper({
-                url: "http://localhost:8000/medications",
+                url: `${BASE_URL}/medications`,
                 method: "POST",
                 body: body
             })
@@ -39,13 +38,12 @@ export const useCreateMedication = () => {
     })
 }
 
-
 export const useGetMedication = (medication_id: string) => {
     return useQuery<MedicationResponse>({
         queryKey: ["medications", medication_id],
         queryFn: () => {
             return apiHelper({
-                url: `http://localhost:8000/medications/${medication_id}`,
+                url: `${BASE_URL}/medications/${medication_id}`,
                 method: "GET"
             })
         },
@@ -59,7 +57,7 @@ export const useReplaceMedication = () => {
     return useMutation<MedicationResponse, Error, { medication_id: string, body: MedicationCreate }>({
         mutationFn: ({ medication_id, body }) => {
             return apiHelper({
-                url: `http://localhost:8000/medications/${medication_id}`,
+                url: `${BASE_URL}/medications/${medication_id}`,
                 method: "PUT",
                 body: body
             })
@@ -75,14 +73,12 @@ export const useReplaceMedication = () => {
     })
 }
 
-
-
 export const useUpdateMedication = () => {
     const queryClient = useQueryClient();
     return useMutation<MedicationResponse, Error, { medication_id: string, body: MedicationUpdate }>({
         mutationFn: ({ medication_id, body }) => {
             return apiHelper({
-                url: `http://localhost:8000/medications/${medication_id}`,
+                url: `${BASE_URL}/medications/${medication_id}`,
                 method: "PATCH",
                 body: body
             })
@@ -98,14 +94,12 @@ export const useUpdateMedication = () => {
     })
 }
 
-
-
 export const useDeleteMedication = () => {
     const queryClient = useQueryClient();
     return useMutation<void, Error, string>({
         mutationFn: (medication_id: string) => {
             return apiHelper({
-                url: `http://localhost:8000/medications/${medication_id}`,
+                url: `${BASE_URL}/medications/${medication_id}`,
                 method: "DELETE",
             })
         },

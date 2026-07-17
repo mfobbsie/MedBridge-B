@@ -2,14 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { apiHelper } from "./apiHelper"
 import type { ReminderUpdate, ReminderCreate, ReminderResponse } from "../types/features"
 
-
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export const useListReminders = () => {
     return useQuery<ReminderResponse[]>({
         queryKey: ["reminders"],
         queryFn: () => {
             return apiHelper({
-                url: "http://localhost:8000/reminders",
+                url: `${BASE_URL}/reminders`,
                 method: "GET",
                 body: null
             })
@@ -17,13 +17,12 @@ export const useListReminders = () => {
     })
 }
 
-
 export const useCreateReminder = () => {
     const queryClient = useQueryClient();
     return useMutation<ReminderResponse, Error, ReminderCreate>({
         mutationFn: (body) => {
             return apiHelper({
-                url: "http://localhost:8000/reminders",
+                url: `${BASE_URL}/reminders`,
                 method: "POST",
                 body: body
             })
@@ -39,13 +38,12 @@ export const useCreateReminder = () => {
     })
 }
 
-
 export const useUpdateReminder = () => {
     const queryClient = useQueryClient();
     return useMutation<ReminderResponse, Error, { reminder_id: string, body: ReminderUpdate }>({
         mutationFn: ({ reminder_id, body }) => {
             return apiHelper({
-                url: `http://localhost:8000/reminders/${reminder_id}`,
+                url: `${BASE_URL}/reminders/${reminder_id}`,
                 method: "PATCH",
                 body: body
             })
@@ -61,13 +59,12 @@ export const useUpdateReminder = () => {
     })
 }
 
-
 export const useDeleteReminder = () => {
     const queryClient = useQueryClient();
     return useMutation<void, Error, string>({
         mutationFn: ( reminder_id:string ) => {
             return apiHelper({
-                url: `http://localhost:8000/reminders/${reminder_id}`,
+                url: `${BASE_URL}/reminders/${reminder_id}`,
                 method: "DELETE",
                 body:null
             })
@@ -83,13 +80,12 @@ export const useDeleteReminder = () => {
     })
 }
 
-
 export const useCompleteReminder = () => {
     const queryClient = useQueryClient();
     return useMutation<void, Error, string>({
         mutationFn: ( reminder_id:string ) => {
             return apiHelper({
-                url: `http://localhost:8000/reminders/${reminder_id}/complete`,
+                url: `${BASE_URL}/reminders/${reminder_id}/complete`,
                 method: "POST",
                 body:null
             })
