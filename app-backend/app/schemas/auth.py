@@ -1,16 +1,19 @@
 from typing import Optional
+
 from pydantic import BaseModel, EmailStr, Field
+
+from app.utils.validation import NonEmptyStr, OptionalNonEmptyStr
 
 
 class RegisterRequest(BaseModel):
     email: EmailStr
-    password: str = Field(..., min_length=8)
-    full_name: Optional[str] = None
+    password: NonEmptyStr = Field(..., min_length=8)
+    full_name: OptionalNonEmptyStr = None
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
-    password: str
+    password: NonEmptyStr = Field(..., min_length=1)
 
 
 class AuthResponse(BaseModel):

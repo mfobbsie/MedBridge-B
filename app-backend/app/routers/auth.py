@@ -49,15 +49,9 @@ async def register(payload: RegisterRequest):
     except HTTPException:
         raise
     except AuthApiError as e:
-        if "rate limit" in str(e).lower():
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Supabase signup rate limit exceeded.",
-            )
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Registration failed. This email may already be registered.",
-        )
+        logger.warning("Registration rejected by Supabase: %s", e)
+        status_code, detail = map_auth_error(e, context="register")
+        raise HTTPException(status_code=status_code, detail=detail)
     except Exception as e:
         logger.exception(f"Registration error: {e}")
         raise HTTPException(

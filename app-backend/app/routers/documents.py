@@ -7,13 +7,14 @@ from app.schemas.documents import (
     PrepResponse, DashboardResponse,
     KpiReadingLevel, KpiQuality, KpiSatisfaction,
 )
-from app.schemas.errors import groq_timeout_error, groq_unavailable_error
+from app.schemas.errors import GENERIC_INTERNAL_ERROR_MESSAGE, groq_timeout_error, groq_unavailable_error
 from app.exceptions import MedBridgeHTTPException
 from app.middleware.auth import get_current_user, get_current_user_sse
 # schemas imported above
 from app.services import document_service, chat_service
 from app.services.profile_service import get_profile_row, dashboard_user
 from app.database import get_supabase
+from app.utils.validation import NonEmptyStr, UuidStr
 import logging
 import uuid
 from datetime import datetime, timezone
@@ -51,7 +52,7 @@ async def list_documents(user: dict = Depends(get_current_user)):
 
 
 @router.get("/documents/{document_id}", response_model=DocumentResponse)
-async def get_document(document_id: str, user: dict = Depends(get_current_user)):
+async def get_document(document_id: UuidStr, user: dict = Depends(get_current_user)):
     doc = document_service.get_document(document_id, user["id"])
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found.")
@@ -59,14 +60,14 @@ async def get_document(document_id: str, user: dict = Depends(get_current_user))
 
 
 @router.delete("/documents/{document_id}", status_code=204)
-async def delete_document(document_id: str, user: dict = Depends(get_current_user)):
+async def delete_document(document_id: UuidStr, user: dict = Depends(get_current_user)):
     success = document_service.delete_document(document_id, user["id"])
     if not success:
         raise HTTPException(status_code=404, detail="Document not found.")
 
 
 @router.get("/documents/{document_id}/summary", response_model=SummaryResponse)
-async def get_summary(document_id: str, user: dict = Depends(get_current_user)):
+async def get_summary(document_id: UuidStr, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
     doc = document_service.get_document(document_id, user["id"])
     if not doc:
@@ -87,10 +88,12 @@ async def get_summary(document_id: str, user: dict = Depends(get_current_user)):
         if current_status in ("uploaded", "processing", "extracted"):
             raise HTTPException(status_code=202, detail=f"Summary still generating. Status: {current_status}")
         if current_status == "failed":
-            detail = doc.get("error_message") or "Summary generation failed."
             raise HTTPException(
                 status_code=502,
-                detail=f"{detail} Use POST /documents/{document_id}/summary to retry.",
+                detail=(
+                    "Summary generation failed. "
+                    f"Use POST /documents/{document_id}/summary to retry."
+                ),
             )
         raise HTTPException(status_code=404, detail="Summary not found.")
 
@@ -105,7 +108,7 @@ async def get_summary(document_id: str, user: dict = Depends(get_current_user)):
 
 @router.post("/documents/{document_id}/summary", response_model=SummaryResponse, status_code=201)
 async def regenerate_summary(
-    document_id: str,
+    document_id: UuidStr,
     background_tasks: BackgroundTasks,
     user: dict = Depends(get_current_user),
 ):
@@ -122,7 +125,8 @@ async def regenerate_summary(
     from app.services.quality_service import check_summary_quality
     result = generate_summary(extracted_text)
     if not result.success:
-        raise HTTPException(status_code=500, detail=result.error_message)
+        logger.error("Summary generation failed: %s", result.error_message)
+        raise HTTPException(status_code=500, detail=GENERIC_INTERNAL_ERROR_MESSAGE)
 
     quality = check_summary_quality(result.text)
     summary_id = str(uuid.uuid4())
@@ -145,7 +149,7 @@ async def regenerate_summary(
 
 @router.post("/summaries/{summary_id}/understanding", response_model=UnderstandingResponse, status_code=201)
 async def rate_understanding(
-    summary_id: str,
+    summary_id: UuidStr,
     payload: UnderstandingRequest,
     user: dict = Depends(get_current_user),
 ):
@@ -179,7 +183,7 @@ async def rate_understanding(
 
 @router.post("/documents/{document_id}/chat", response_model=ChatResponse, status_code=201)
 async def ask_question(
-    document_id: str,
+    document_id: UuidStr,
     payload: ChatRequest,
     user: dict = Depends(get_current_user),
 ):
@@ -254,7 +258,7 @@ async def ask_question(
 
 
 @router.get("/documents/{document_id}/chat", response_model=list[dict])
-async def get_chat_history(document_id: str, user: dict = Depends(get_current_user)):
+async def get_chat_history(document_id: UuidStr, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
     doc = document_service.get_document(document_id, user["id"])
     if not doc:
@@ -273,8 +277,8 @@ async def get_chat_history(document_id: str, user: dict = Depends(get_current_us
 
 @router.get("/documents/{document_id}/chat/stream")
 async def stream_chat(
-    document_id: str,
-    message: str,
+    document_id: UuidStr,
+    message: NonEmptyStr,
     token: str = None,
     user: dict = Depends(get_current_user_sse),
 ):
@@ -356,7 +360,7 @@ async def stream_chat(
 
 @router.patch("/chat/{message_id}/rating", status_code=200)
 async def rate_message(
-    message_id: str,
+    message_id: UuidStr,
     payload: FeedbackRequest,
     user: dict = Depends(get_current_user),
 ):
@@ -377,7 +381,7 @@ async def rate_message(
 
 
 @router.post("/documents/{document_id}/prep", response_model=PrepResponse, status_code=201)
-async def get_appointment_prep(document_id: str, user: dict = Depends(get_current_user)):
+async def get_appointment_prep(document_id: UuidStr, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
     doc = document_service.get_document(document_id, user["id"])
     if not doc:
@@ -399,7 +403,8 @@ async def get_appointment_prep(document_id: str, user: dict = Depends(get_curren
     from app.services.prep_service import generate_prep_questions
     result = generate_prep_questions(extracted_text=extracted_text, chunk_texts=chunk_texts if chunk_texts else None)
     if not result.success:
-        raise HTTPException(status_code=500, detail=result.error_message)
+        logger.error("Prep generation failed: %s", result.error_message)
+        raise HTTPException(status_code=500, detail=GENERIC_INTERNAL_ERROR_MESSAGE)
 
     prep_id = str(uuid.uuid4())
     try:

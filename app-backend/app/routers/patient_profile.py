@@ -13,6 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.database import get_supabase
 from app.middleware.auth import get_current_user
+from app.schemas.errors import GENERIC_INTERNAL_ERROR_MESSAGE
 from app.schemas.patient_profile import (
     PatientProfileCreate,
     PatientProfileResponse,
@@ -21,6 +22,7 @@ from app.schemas.patient_profile import (
 from app.services.profile_service import get_profile_row, to_profile_response
 
 router = APIRouter(prefix="/patient-profile", tags=["Patient Profile"])
+
 
 @router.post("", response_model=PatientProfileResponse, status_code=status.HTTP_201_CREATED)
 async def create_patient_profile(
@@ -48,7 +50,7 @@ async def create_patient_profile(
         row_data["user_id"] = user["id"]
         result = supabase.table("user_profiles").insert(row_data).execute()
         if not result.data:
-            raise HTTPException(status_code=500, detail="Failed to create patient profile.")
+            raise HTTPException(status_code=500, detail=GENERIC_INTERNAL_ERROR_MESSAGE)
         return to_profile_response(result.data[0], user["email"])
 
     if existing.get("full_name"):
@@ -64,7 +66,7 @@ async def create_patient_profile(
         .execute()
     )
     if not result.data:
-        raise HTTPException(status_code=500, detail="Failed to create patient profile.")
+        raise HTTPException(status_code=500, detail=GENERIC_INTERNAL_ERROR_MESSAGE)
     return to_profile_response(result.data[0], user["email"])
 
 
@@ -84,14 +86,14 @@ async def update_patient_profile(
     user: dict = Depends(get_current_user),
 ):
     """Update the authenticated user's health profile."""
+    updates = {k: v for k, v in payload.model_dump(exclude_unset=True).items() if v is not None}
+    if not updates:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields provided to update.")
+
     supabase = get_supabase()
     existing = get_profile_row(supabase, user["id"])
     if existing is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Patient profile not found.")
-
-    updates = {k: v for k, v in payload.model_dump().items() if v is not None}
-    if not updates:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No fields provided to update.")
 
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
 
@@ -102,5 +104,5 @@ async def update_patient_profile(
         .execute()
     )
     if not result.data:
-        raise HTTPException(status_code=500, detail="Failed to update patient profile.")
+        raise HTTPException(status_code=500, detail=GENERIC_INTERNAL_ERROR_MESSAGE)
     return to_profile_response(result.data[0], user["email"])

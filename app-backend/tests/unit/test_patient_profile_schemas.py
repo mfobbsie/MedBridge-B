@@ -23,6 +23,19 @@ def test_create_rejects_invalid_explanation_level():
         )
 
 
+def test_create_rejects_whitespace_full_name():
+    with pytest.raises(ValidationError):
+        PatientProfileCreate(
+            full_name="   ",
+            preferred_language="en",
+        )
+
+
+def test_update_rejects_whitespace_full_name():
+    with pytest.raises(ValidationError):
+        PatientProfileUpdate(full_name="  ")
+
+
 def test_update_allows_partial_fields():
     profile = PatientProfileUpdate(full_name="Updated Name")
     assert profile.preferred_language is None

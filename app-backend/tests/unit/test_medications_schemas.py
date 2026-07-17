@@ -24,6 +24,11 @@ def test_create_rejects_empty_name():
         MedicationCreate(name="")
 
 
+def test_create_rejects_whitespace_name():
+    with pytest.raises(ValidationError):
+        MedicationCreate(name="   ")
+
+
 def test_create_rejects_invalid_status():
     with pytest.raises(ValidationError):
         MedicationCreate(name="Lisinopril", status="discontinued")

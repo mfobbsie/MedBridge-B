@@ -3,6 +3,7 @@ from typing import Optional
 from datetime import datetime
 from enum import Enum
 from app.schemas.patient_profile import PatientProfileResponse
+from app.utils.validation import NonEmptyStr
 
 
 class DocumentStatus(str, Enum):
@@ -50,7 +51,7 @@ class SummaryResponse(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    question: str = Field(..., min_length=1, max_length=2000)
+    question: NonEmptyStr = Field(..., min_length=1, max_length=2000)
 
 
 class ChatResponse(BaseModel):
@@ -71,7 +72,7 @@ class FeedbackRequest(BaseModel):
 
 
 class ReminderCreate(BaseModel):
-    title: str = Field(..., min_length=1, max_length=255)
+    title: NonEmptyStr = Field(..., min_length=1, max_length=255)
     due_date: Optional[datetime] = None
     notes: Optional[str] = None
 
