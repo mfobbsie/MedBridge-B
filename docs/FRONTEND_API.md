@@ -47,7 +47,6 @@ Authorization: Bearer <supabase_jwt>
 **Exceptions:**
 
 - `GET /documents/{document_id}/chat/stream` — JWT via `?token=` query param (EventSource cannot send headers)
-- `GET /user-settings/` and `PATCH /user-settings/` — `user_id` query param only (no JWT); see [User Settings](#user-settings-feature-toggles)
 - `/analytics/*` — Bearer token required, but uses a non-standard auth helper; see [Contract Review Notes](#contract-review-notes)
 
 On `401`, redirect to login. On logout, call `POST /auth/logout` before clearing the token.
@@ -1784,11 +1783,13 @@ Profile screen toggles: Reminders, Trusted Contacts, MyChart.
 
 > **Note:** This is separate from [Analytics Settings](#analytics-settings-preferences). See [Contract Review Notes](#contract-review-notes).
 
+**Auth:** `Authorization: Bearer <supabase_jwt>` — same as the rest of the API. The backend derives `user_id` from the validated JWT. Do **not** send a `user_id` query parameter; any supplied value is ignored and cannot change which user's settings are read or updated.
+
 ### Get User Settings
 
-`GET /user-settings/?user_id={user_id}`
+`GET /user-settings/`
 
-**Auth:** `user_id` query param (UUID) — **no JWT required**
+**Auth:** Bearer JWT required
 
 **Request body:** None
 
@@ -1811,15 +1812,16 @@ Creates a default row if none exists.
 
 | Status | Body | When |
 |---|---|---|
-| 422 | Validation detail array | Invalid `user_id` format |
+| 401 | `{"detail": "Invalid or expired token"}` | Missing or bad JWT |
+| 500 | `{"detail": "An unexpected error occurred. Please try again."}` | Database error |
 
 ---
 
 ### Update User Settings
 
-`PATCH /user-settings/?user_id={user_id}`
+`PATCH /user-settings/`
 
-**Auth:** `user_id` query param (UUID) — **no JWT required**
+**Auth:** Bearer JWT required
 
 **Request body:** (all fields optional)
 
@@ -1838,8 +1840,10 @@ Creates a default row if none exists.
 | Status | Body | When |
 |---|---|---|
 | 400 | `{"detail": "No fields provided to update"}` | Empty PATCH body |
+| 401 | `{"detail": "Invalid or expired token"}` | Missing or bad JWT |
 | 404 | `{"detail": "Settings not found"}` | No settings row |
-| 422 | Validation detail array | Invalid `user_id` or field values |
+| 422 | Validation detail array | Invalid field values |
+| 500 | `{"detail": "An unexpected error occurred. Please try again."}` | Database error |
 
 ---
 
@@ -2132,7 +2136,7 @@ Items for the frontend team to review and align their code against. Listed here 
 
 | Endpoint | Purpose | Auth | Fields |
 |---|---|---|---|
-| `GET/PATCH /user-settings/?user_id=` | Feature toggles (Profile screen) | `user_id` query param, no JWT | `allow_trusted_contacts`, `allow_mychart_integration`, `enable_reminders` |
+| `GET/PATCH /user-settings/` | Feature toggles (Profile / Account Settings) | Bearer JWT (`get_current_user`); `user_id` is derived from the token | `allow_trusted_contacts`, `allow_mychart_integration`, `enable_reminders` |
 | `GET/PATCH /analytics/settings` | User preferences / accessibility | Bearer token | `preferred_language`, `accessibility_mode`, `low_bandwidth_mode`, `notification_enabled` |
 
 Both touch the `user_settings` table but expose different field subsets.
