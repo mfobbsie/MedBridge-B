@@ -17,36 +17,33 @@ export interface UpdateUserSettings {
     enable_reminders: boolean | null;
 }
 
-export const useGetUserSettings = (user_id: string) => {
+export const useGetUserSettings = () => {
     return useQuery<UserSettingsResponse>({
-        queryKey: ["user-settings", user_id],
+        queryKey: ["user-settings"],
         queryFn: () => {
             return apiHelper({
-                url: `${BASE_URL}/user-settings/?user_id=${user_id}`,
+                url: `${BASE_URL}/user-settings/`,
                 method: "GET",
-                body: null
-            })
+                body: null,
+            });
         },
-        enabled: !!user_id
-    })
+    });
+};
 
-}
-
-export const useUpdateUserSettings = (user_id: string) => {
+export const useUpdateUserSettings = () => {
     const queryClient = useQueryClient();
 
     return useMutation<UserSettingsResponse, Error, UpdateUserSettings>({
         mutationFn: (body) => {
             return apiHelper({
-                url: `${BASE_URL}/user-settings/?user_id=${user_id}`,
+                url: `${BASE_URL}/user-settings/`,
                 method: "PATCH",
                 body: body
             })
         },
         onSuccess: (data) => {
-            console.log(`User ${user_id} settings have been updated.`, data)
-            queryClient.invalidateQueries({ queryKey: ["user-settings", user_id] })
-
+            console.log(`User settings have been updated.`, data)
+            queryClient.invalidateQueries({ queryKey: ["user-settings"] })
         },
         onError: (error) => {
             console.error("Failed to update user settings.", error)
