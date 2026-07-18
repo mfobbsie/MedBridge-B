@@ -1,5 +1,5 @@
 // src/components/MedicalHistoryModals/EditSettingsModal.tsx
-import {  useState } from "react";
+import {  useState, useEffect } from "react";
 import { useUserSettingsDomain } from "../../hooks/useUserSettingsDomain";
 import "./Modal.css";
 import "../../main.css";
@@ -31,6 +31,14 @@ export default function UserSettingsModal({
     settings?.enable_reminders ?? false,
   );
 
+  useEffect(() => {
+    if (settings) {
+      setAllowTrustedContacts(settings.allow_trusted_contacts);
+      setAllowMyChartIntegration(settings.allow_mychart_integration);
+      setEnableReminders(settings.enable_reminders);
+    }
+  }, [settings]);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -41,6 +49,7 @@ export default function UserSettingsModal({
       allow_mychart_integration: allowMyChartIntegration,
       enable_reminders: enableReminders,
     });
+    onClose();
   };
 
   return (

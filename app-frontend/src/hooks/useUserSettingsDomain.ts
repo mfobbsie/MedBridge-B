@@ -1,7 +1,11 @@
 import {
   useGetUserSettings,
   useUpdateUserSettings,
-  type UserSettingsResponse,
+} from "../api/user-settings.queries";
+
+import type {
+  UserSettingsResponse,
+   UpdateUserSettings,
 } from "../api/user-settings.queries";
 
 const emptySettings: UserSettingsResponse = {
@@ -67,20 +71,12 @@ export const useUserSettingsDomain = () => {
       isActionInFlight: updatePending,
     },
     actions: {
-      saveSettings: (body) => {
-        const patchBody: any = {};
-
-        if (body.allow_trusted_contacts !== undefined) {
-          patchBody.allow_trusted_contacts = body.allow_trusted_contacts;
-        }
-
-        if (body.allow_mychart_integration !== undefined) {
-          patchBody.allow_mychart_integration = body.allow_mychart_integration;
-        }
-
-        if (body.enable_reminders !== undefined) {
-          patchBody.enable_reminders = body.enable_reminders;
-        }
+      saveSettings: (body: UpdateUserSettings) => {
+        const patchBody: UpdateUserSettings = {
+          allow_trusted_contacts: body.allow_trusted_contacts ?? null,
+          allow_mychart_integration: body.allow_mychart_integration ?? null,
+          enable_reminders: body.enable_reminders ?? null,
+        };
 
         updateMutation(patchBody);
       },

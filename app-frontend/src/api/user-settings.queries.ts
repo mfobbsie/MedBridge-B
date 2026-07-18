@@ -48,8 +48,5 @@ export const useUpdateUserSettings = () => {
         onError: (error) => {
             console.error("Failed to update user settings.", error)
         }
-
-
     })
-
 }
