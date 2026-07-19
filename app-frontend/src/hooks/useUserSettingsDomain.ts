@@ -8,6 +8,8 @@ import type {
    UpdateUserSettings,
 } from "../api/user-settings.queries";
 
+import type { UserSettingsResponse, UpdateUserSettings } from "../api/user-settings.queries";
+
 const emptySettings: UserSettingsResponse = {
   id: "",
   allow_trusted_contacts: false,
@@ -78,10 +80,9 @@ export const useUserSettingsDomain = () => {
           enable_reminders: body.enable_reminders ?? null,
         };
 
-        updateMutation(patchBody);
-      },
+  updateMutation(patchBody);
+},
     },
-
     viewConfigs,
   };
 };
