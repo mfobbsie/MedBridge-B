@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiHelper } from "../api/apiHelper";
+import { API_BASE_URL } from "../config/env";
 import type { UserProfile, UserProfileUpdate } from "../types/auth";
 
 export const useUserProfileDomain = () => {
@@ -15,7 +16,7 @@ export const useUserProfileDomain = () => {
     queryKey: ["user-profile"],
     queryFn: () =>
       apiHelper({
-        url: "http://localhost:8000/patient-profile",
+        url: `${API_BASE_URL}/patient-profile`,
         method: "GET",
       }),
   });
@@ -29,7 +30,7 @@ export const useUserProfileDomain = () => {
   } = useMutation<UserProfile, Error, UserProfileUpdate>({
     mutationFn: (body) =>
       apiHelper({
-        url: "http://localhost:8000/patient-profile",
+        url: `${API_BASE_URL}/patient-profile`,
         method: "PATCH",
         body,
       }),

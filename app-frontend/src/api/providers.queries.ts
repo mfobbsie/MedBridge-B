@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiHelper } from "./apiHelper";
 import type { ProviderCreate, ProviderResponse, ProviderUpdate } from "../types/features";
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL as BASE_URL } from "../config/env";
 
 export const useListProviders = () => {
     return useQuery<ProviderResponse[]>({

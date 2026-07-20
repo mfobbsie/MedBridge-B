@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiHelper } from "./apiHelper";
 import type { UserProfile, UserProfileUpdate } from "../types/auth";
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL as BASE_URL } from "../config/env";
 
 export interface UserProfileResponse {
   id: string;
@@ -32,7 +32,7 @@ export const useUpdateUserProfile = () => {
   return useMutation<UserProfile, Error, UserProfileUpdate>({
     mutationFn: (body) =>
       apiHelper({
-        url: "http://localhost:8000/patient-profile",
+        url: `${BASE_URL}/patient-profile`,
         method: "PATCH",
         body,
       }),

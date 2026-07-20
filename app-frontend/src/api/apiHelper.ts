@@ -7,6 +7,41 @@ export interface apiHelper<T = unknown> {
     params?: Record<string, string | number | boolean | null | undefined>
 }
 
+/**
+ * Thrown when a request URL is not an absolute http(s) URL.
+ *
+ * Most often this means VITE_API_URL was missing or malformed, which previously
+ * produced silent same-origin requests such as `/undefined/auth/login`.
+ */
+export class InvalidApiUrlError extends Error {
+    constructor(url: string) {
+        super(
+            `[apiHelper] Invalid request URL: "${url}". Expected an absolute http(s) URL. ` +
+            "Check that VITE_API_URL is set correctly — see app-frontend/.env.example."
+        );
+        this.name = "InvalidApiUrlError";
+    }
+}
+
+/**
+ * Parses an absolute http(s) request URL.
+ *
+ * Deliberately does NOT resolve relative URLs against `window.location.origin`:
+ * that turned a misconfigured base URL into a valid same-origin request which
+ * returned the SPA's index.html with a 200 status instead of failing.
+ */
+const toAbsoluteApiUrl = (url: string): URL => {
+    try {
+        const parsed = new URL(url);
+        if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+            return parsed;
+        }
+    } catch {
+        // Falls through to the InvalidApiUrlError below.
+    }
+    throw new InvalidApiUrlError(url);
+};
+
 export const setAuthCookie = (token: string, days: number = 7): void => {
     const date = new Date();
     date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
@@ -54,7 +89,7 @@ export const apiHelper = async ({ url, method, body, tokenOverride, params }: ap
             headers["Authorization"] = `Bearer ${token}`;
         }
 
-        const parsedUrl = new URL(url, window.location.origin);
+        const parsedUrl = toAbsoluteApiUrl(url);
         if(params){
             Object.entries(params).forEach(([key, value]) => {
                 if(value !== undefined && value !== null){

@@ -1,4 +1,5 @@
 import type { DocumentResponse } from "../../types/documents";
+import { API_BASE_URL } from "../../config/env";
 
 interface DocumentsTabProps {
   documents: DocumentResponse[];
@@ -24,7 +25,7 @@ export default function DocumentsTab({
           <div key={doc.document_id} className="list-row">
             <span>
               <a
-                href={`http://localhost:8000/documents/${doc.document_id}`}
+                href={`${API_BASE_URL}/documents/${doc.document_id}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="document-link"

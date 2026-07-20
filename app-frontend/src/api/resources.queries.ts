@@ -4,7 +4,7 @@ import type { ResourceResponse } from "../types/features";
 
 import type { HealthScoreResponse } from "../types/features";
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL as BASE_URL } from "../config/env";
 
 export const useListResources = (filters: { resource_type?: string; tag?: string } = {}) => {
     const { resource_type, tag } = filters;

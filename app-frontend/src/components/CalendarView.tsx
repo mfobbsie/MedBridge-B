@@ -4,6 +4,7 @@ import { format, parse, startOfWeek, getDay, addHours } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiHelper } from '../api/apiHelper'; // Adjust path if needed
+import { API_BASE_URL } from '../config/env';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const locales = { 'en-US': enUS };
@@ -54,7 +55,7 @@ export default function CalendarView() {
     
     const { data: rawReminders = [], isLoading, isError } = useQuery<ReminderBackendResponse[]>({
         queryKey: ['reminders'],
-        queryFn: async () => apiHelper({ url: 'http://localhost:8000/reminders', method: 'GET' })
+        queryFn: async () => apiHelper({ url: `${API_BASE_URL}/reminders`, method: 'GET' })
     });
 
     // Parse backend values into front-end event format
@@ -91,7 +92,7 @@ export default function CalendarView() {
 
     const createMutation = useMutation({
         mutationFn: async (newReminder: any) => apiHelper({
-            url: 'http://localhost:8000/reminders',
+            url: `${API_BASE_URL}/reminders`,
             method: 'POST',
             body: newReminder
         }),
@@ -103,7 +104,7 @@ export default function CalendarView() {
 
     const updateMutation = useMutation({
         mutationFn: async ({ id, data }: { id: string; data: any }) => apiHelper({
-            url: `http://localhost:8000/reminders/${id}`,
+            url: `${API_BASE_URL}/reminders/${id}`,
             method: 'PATCH',
             body: data
         }),
@@ -115,7 +116,7 @@ export default function CalendarView() {
 
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => apiHelper({
-            url: `http://localhost:8000/reminders/${id}`,
+            url: `${API_BASE_URL}/reminders/${id}`,
             method: 'DELETE'
         }),
         onSuccess: () => {
@@ -126,7 +127,7 @@ export default function CalendarView() {
 
     const completeMutation = useMutation({
         mutationFn: async (id: string) => apiHelper({
-            url: `http://localhost:8000/reminders/${id}/complete`,
+            url: `${API_BASE_URL}/reminders/${id}/complete`,
             method: 'POST'
         }),
         onSuccess: () => {

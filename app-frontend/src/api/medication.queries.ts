@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { type MedicationCreate, type MedicationFilters, type MedicationResponse, type MedicationUpdate } from "../types/medication"
 import { apiHelper } from "./apiHelper"
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL as BASE_URL } from "../config/env";
 
 export const useListMedications = (filters?: MedicationFilters) => {
     return useQuery<MedicationResponse[]>({

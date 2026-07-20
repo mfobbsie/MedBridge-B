@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import type { FeedbackRequest, ChatResponse, ChatRequest, UnderstandingResponse, UnderstandingRequest } from "../types/documents";
 import { apiHelper } from "./apiHelper";
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL as BASE_URL } from "../config/env";
 
 export const useStreamChat = () => {
     const { token } = useAuth();

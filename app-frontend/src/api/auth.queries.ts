@@ -3,7 +3,7 @@ import type { LoginRequest, AuthResponse, RegisterRequest } from "../types/auth"
 import { useAuth } from "../context/AuthContext";
 import { apiHelper } from "./apiHelper";
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL as BASE_URL } from "../config/env";
 
 export function useLogin() {
     const { login } = useAuth();
