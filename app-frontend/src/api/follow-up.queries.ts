@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { FollowUpCreate, FollowUpResponse, FollowUpUpdate } from "../types/features";
 import { apiHelper } from "./apiHelper";
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL as BASE_URL } from "../config/env";
 
 export const useListFollowUp = (document_id: string) => {
     return useQuery<FollowUpResponse[]>({

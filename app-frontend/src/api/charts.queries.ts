@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiHelper } from "./apiHelper";
 
-const BASE_URL = import.meta.env.VITE_API_URL;
+import { API_BASE_URL as BASE_URL } from "../config/env";
 
 export interface ChartEntry {
   id: string;
