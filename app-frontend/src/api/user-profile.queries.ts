@@ -32,7 +32,7 @@ export const useUpdateUserProfile = () => {
   return useMutation<UserProfile, Error, UserProfileUpdate>({
     mutationFn: (body) =>
       apiHelper({
-        url: "http://localhost:8000/patient-profile",
+        url: `${BASE_URL}/patient-profile`,
         method: "PATCH",
         body,
       }),
