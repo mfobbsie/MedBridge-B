@@ -16,12 +16,7 @@ class Settings(BaseSettings):
     app_env: str = "development"
     secret_key: str = "dev-secret-key-change-in-production"
     max_file_size_mb: int = 10
-    allowed_origins: str = (
-    "http://localhost:3000, "
-    "http://localhost:5173, "
-    "http://localhost:8000, "
-    "https://med-bridge-b.vercel.app"
-)
+    allowed_origins: str = ""
 
     ocr_confidence_threshold: int = 60
     tesseract_cmd: str = "tesseract"
