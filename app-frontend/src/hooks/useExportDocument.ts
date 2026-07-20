@@ -4,7 +4,7 @@ import { useState } from "react";
 export interface UseExportDocumentConfig {
   id: string;
   ai_summary: string;
-  document_file_url:string | undefined;
+  document_file_url: string | undefined;
   onSubmit: (payload: {
     id: string;
     ai_summary: string;
@@ -26,7 +26,7 @@ export const useExportDocument = ({
   const [input, setInput] = useState<string>("");
   const [isExporting, setIsExporting] = useState<boolean>(false);
 
- 
+
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const cleanNumber = input.replace(/\D/g, "");
   const isTextNumberValid = cleanNumber.length === 10;
@@ -35,18 +35,19 @@ export const useExportDocument = ({
   const isValid = method === "email"
     ? emailRegex.test(input)
     : isTextNumberValid;
+    
 
-    const handleSend = async () => {
-      if (!isValid || isExporting) return;
-      setIsExporting(true);
+  const handleSend = async () => {
+    if (!isValid || isExporting) return;
+    setIsExporting(true);
 
-      try {
+    try {
       let fileToShare: File | null = null;
 
       if (document_file_url) {
         try {
           const response = await fetch(document_file_url);
-        
+
           const blob = await response.blob();
           fileToShare = new File([blob], `Document_${id}.pdf`, {
             type: "application/pdf",
@@ -69,7 +70,7 @@ export const useExportDocument = ({
       ) {
         await navigator.share(shareData);
       } else {
-        
+
         const combinedContent = `Document AI Summary:\n${ai_summary}\n\nSource Document Reference:\n${document_file_url || "N/A"}`;
         const encodedBody = encodeURIComponent(combinedContent);
 
@@ -95,9 +96,9 @@ export const useExportDocument = ({
     }
   };
 
-    const handleCancel = () => {
-      onClose();
-    }
+  const handleCancel = () => {
+    onClose();
+  }
 
   return {
     method,
