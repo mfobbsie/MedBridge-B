@@ -8,8 +8,6 @@ import type {
    UpdateUserSettings,
 } from "../api/user-settings.queries";
 
-import type { UserSettingsResponse, UpdateUserSettings } from "../api/user-settings.queries";
-
 const emptySettings: UserSettingsResponse = {
   id: "",
   allow_trusted_contacts: false,
