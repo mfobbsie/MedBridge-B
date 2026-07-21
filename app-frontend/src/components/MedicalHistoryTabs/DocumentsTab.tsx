@@ -1,5 +1,5 @@
 import type { DocumentResponse } from "../../types/documents";
-import { API_BASE_URL } from "../../config/env";
+import {useGetDocumentFileUrl} from "../../api/documents.queries";
 
 interface DocumentsTabProps {
   documents: DocumentResponse[];
@@ -11,6 +11,16 @@ export default function DocumentsTab({
   documents,
   onEditDocument,
 }: DocumentsTabProps) {
+  const { mutate: getFileUrl } = useGetDocumentFileUrl();
+
+  const handleOpenDocument = (document_id: string) => {
+    getFileUrl(document_id, {
+      onSuccess: (data) => {
+        window.open(data.url, "_blank", "noopener,noreferrer");
+      },
+    });
+  };
+
   const sortedDocuments = [...documents].sort(
     (a, b) =>
       new Date(b.uploaded_at).getTime() - new Date(a.uploaded_at).getTime(),
@@ -24,19 +34,21 @@ export default function DocumentsTab({
         sortedDocuments.map((doc) => (
           <div key={doc.document_id} className="list-row">
             <span>
-              <a
-                href={`${API_BASE_URL}/documents/${doc.document_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
+              <span
+                onClick={() => handleOpenDocument(doc.document_id)}
                 className="document-link"
+                style={{ cursor: "pointer" }}
               >
                 {doc.file_name}
-              </a>
+              </span>
               {" — "}
               {doc.status} ({new Date(doc.uploaded_at).toLocaleDateString()})
             </span>
 
-            <button className="modal-delete" onClick={() => onEditDocument(doc)}>
+            <button
+              className="modal-delete"
+              onClick={() => onEditDocument(doc)}
+            >
               delete
             </button>
           </div>
