@@ -28,13 +28,13 @@ export interface ReminderUpdate {
 export interface ReminderResponse {
     id: string;
     user_id: string;
-    health_record_id?:string;
+    health_record_id?:string | null;
     reminder_type: string;
-    document_id?: string;
+    document_id?: string | null;
     title: string;
-    body?:string;
+    body?:string | null;
     remind_at: string;
-    repeat_interval?: string;
+    repeat_interval?: string | null;
     completed: boolean;
     created_at: string;
 }
@@ -43,11 +43,22 @@ export interface ReminderResponse {
 export interface ReminderResponse {
     reminder_id: string;
     user_id: string;
-    document_id?: string;
+    document_id?: string | null;
     title: string;
     due_date?: string;
     notes?: string;
     created_at: string;
+}
+
+
+export interface CalendarEvent {
+    id: string;
+    title: string;
+    start: Date;
+    end: Date;
+    type: 'medication' | 'appointment' | 'other';
+    notes: string;
+    completed: boolean;
 }
 
 

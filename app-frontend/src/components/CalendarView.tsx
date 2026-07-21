@@ -6,31 +6,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiHelper } from '../api/apiHelper'; // Adjust path if needed
 import { API_BASE_URL } from '../config/env';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import type { CalendarEvent, ReminderResponse } from '../types/features';
 
 const locales = { 'en-US': enUS };
 const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
 
-export interface ReminderBackendResponse {
-    id: string;
-    user_id: string;
-    reminder_type: string;
-    title: string;
-    body: string;
-    remind_at: string;
-    repeat_interval: string | null;
-    completed: boolean;
-    health_record_id?: string | null;
-}
 
-interface CalendarEvent {
-    id: string;
-    title: string;
-    start: Date;
-    end: Date;
-    type: 'medication' | 'appointment' | 'other';
-    notes: string;
-    completed: boolean;
-}
 
 export default function CalendarView() {
     const queryClient = useQueryClient();
@@ -52,8 +33,8 @@ export default function CalendarView() {
     // =========================================================================
     // REACT QUERY BACKEND SYNCHRONIZATION
     // =========================================================================
-    
-    const { data: rawReminders = [], isLoading, isError } = useQuery<ReminderBackendResponse[]>({
+
+    const { data: rawReminders = [], isLoading, isError } = useQuery<ReminderResponse[]>({
         queryKey: ['reminders'],
         queryFn: async () => apiHelper({ url: `${API_BASE_URL}/reminders`, method: 'GET' })
     });
@@ -172,8 +153,8 @@ export default function CalendarView() {
         const endCombined = new Date(`${endDate}T${endTime}`).toISOString();
 
         // Package the end timestamp cleanly into the body/notes string for storage
-        const bodyPayloadWithEndContext = eventNotes.trim() 
-            ? `${eventNotes} \n\n__END_TIME__:${endCombined}` 
+        const bodyPayloadWithEndContext = eventNotes.trim()
+            ? `${eventNotes} \n\n__END_TIME__:${endCombined}`
             : `__END_TIME__:${endCombined}`;
 
         const payload = {
@@ -237,13 +218,13 @@ export default function CalendarView() {
                 );
             },
             event: ({ event }: { event: CalendarEvent }) => (
-                <span 
-                    onClick={() => handleSelectEvent(event)} 
-                    style={{ 
-                        cursor: 'pointer', 
-                        color: event.completed ? '#10b981' : '#2563eb', 
+                <span
+                    onClick={() => handleSelectEvent(event)}
+                    style={{
+                        cursor: 'pointer',
+                        color: event.completed ? '#10b981' : '#2563eb',
                         textDecoration: event.completed ? 'line-through' : 'none',
-                        fontWeight: 500 
+                        fontWeight: 500
                     }}
                 >
                     {event.title} {event.notes ? `(${event.notes})` : ''}

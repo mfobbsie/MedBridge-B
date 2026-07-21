@@ -1,9 +1,17 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import "../main.css";
 import "./Dashboard.css";
 import CalendarView from "../components/CalendarView";
 
 export const Dashboard = (): ReactNode => {
+  const [textValue, setTextValue] = useState<string>("");
+
+  const handleChange = (e:React.ChangeEvent<HTMLTextAreaElement>) => {
+  const {value} = e.target;
+  setTextValue(() => value)
+
+  }
+
   return (
     <div className="dashboard-page-container">
       <div>
@@ -18,7 +26,12 @@ export const Dashboard = (): ReactNode => {
         <CalendarView />
       </div>
 
-      <textarea placeholder="Additional Notes..." className="dashboard-notes" />
+      <textarea 
+        placeholder="Additional Notes..." 
+        className="dashboard-notes"
+        value={textValue}
+        onChange={handleChange}
+         />
     </div>
   );
 };
