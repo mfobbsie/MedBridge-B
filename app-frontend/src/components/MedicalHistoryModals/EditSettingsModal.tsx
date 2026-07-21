@@ -43,13 +43,13 @@ export default function UserSettingsModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (flags.isUpdating) return; 
 
     actions.saveSettings({
       allow_trusted_contacts: allowTrustedContacts,
       allow_mychart_integration: allowMyChartIntegration,
       enable_reminders: enableReminders,
     });
-    onClose();
   };
 
   return (
