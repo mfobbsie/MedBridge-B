@@ -64,6 +64,20 @@ export const useGetDocument = (document_id: string) => {
     })
 }
 
+export const useGetDocumentFileUrl = () => {
+  return useMutation<{ url: string }, Error, string>({
+    mutationFn: (document_id) =>
+      apiHelper({
+        url: `${BASE_URL}/documents/${document_id}/file`,
+        method: "GET",
+        body: null,
+      }),
+    onError: (error) => {
+      console.error("Failed to get document file URL:", error);
+    },
+  });
+};
+
 export const useDeleteDocument = () => {
     const queryClient = useQueryClient();
     return useMutation<void, Error, string>({
