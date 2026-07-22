@@ -1,9 +1,10 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import "../main.css";
 import "./Dashboard.css";
 import CalendarView from "../components/CalendarView";
 
 export const Dashboard = (): ReactNode => {
+  
   return (
     <div className="dashboard-page-container">
       <div>
@@ -18,7 +19,7 @@ export const Dashboard = (): ReactNode => {
         <CalendarView />
       </div>
 
-      <textarea placeholder="Additional Notes..." className="dashboard-notes" />
+     
     </div>
   );
 };
