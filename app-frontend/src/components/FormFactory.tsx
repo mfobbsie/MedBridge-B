@@ -53,6 +53,16 @@ export const FormFactory = ({
                 </option>
               ))}
             </select>
+          ) : field.type === "textarea" ? (
+            <textarea
+              id={field.name}
+              name={field.name}
+              value={values[field.name] || ""}
+              onChange={changeHandler}
+              onBlur={blurHandler}
+              disabled={isLoading}
+              className="form-input form-textarea"
+            />
           ) : (
             <input
               id={field.name}
