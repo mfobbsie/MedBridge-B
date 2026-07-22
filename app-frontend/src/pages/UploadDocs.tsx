@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ChatbotWidget } from "../components/ChatbotWidget";
 import { DocumentContentPanel } from "../components/DocumentContentPanel";
 import { LoadingSpinner } from "../components/LoadingSpinner";
@@ -7,9 +8,6 @@ import { useModal } from "../context/ModalContext";
 import { useDocumentsDomain } from "../hooks/useDocumentsDomain";
 import "./UploadDocs.css";
 import { ExportDocument } from "../components/ExportDocument";
-
-
-
 
 const getSafeDocumentUrl = (url: string | null | undefined): string | null => {
   if (!url) return null;
@@ -21,11 +19,13 @@ const getSafeDocumentUrl = (url: string | null | undefined): string | null => {
   }
 };
 
-
 export const UploadDocs = (): ReactNode => {
-  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
-  const [rightPanelTab, setRightPanelTab] = useState<"summary" | "pdf">("summary");
+  const [searchParams] = useSearchParams();
+  const deepLinkedDocId = searchParams.get("doc");
 
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
+
+  const [rightPanelTab, setRightPanelTab] = useState<"summary" | "pdf">("summary");
 
   const { openModal, closeModal } = useModal();
 
@@ -54,7 +54,6 @@ export const UploadDocs = (): ReactNode => {
         }}
       />)
   }
-
 
 
   const activeFileName = data.activeDocument?.file_name;
