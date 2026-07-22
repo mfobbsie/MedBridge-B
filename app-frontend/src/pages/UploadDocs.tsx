@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ChatbotWidget } from "../components/ChatbotWidget";
 import { DocumentContentPanel } from "../components/DocumentContentPanel";
@@ -8,6 +8,7 @@ import { useModal } from "../context/ModalContext";
 import { useDocumentsDomain } from "../hooks/useDocumentsDomain";
 import "./UploadDocs.css";
 import { ExportDocument } from "../components/ExportDocument";
+import { ShimmerLoader } from "../components/Shimmer";
 
 const getSafeDocumentUrl = (url: string | null | undefined): string | null => {
   if (!url) return null;
@@ -23,15 +24,31 @@ export const UploadDocs = (): ReactNode => {
   const [searchParams] = useSearchParams();
   const deepLinkedDocId = searchParams.get("doc");
 
-  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(null);
+  const [selectedDocumentId, setSelectedDocumentId] = useState<string | null>(
+    null,
+  );
 
-  const [rightPanelTab, setRightPanelTab] = useState<"summary" | "pdf">("summary");
+  const [rightPanelTab, setRightPanelTab] = useState<"summary" | "pdf">(
+    "summary",
+  );
+
+  useEffect(() => {
+    if (deepLinkedDocId) {
+      setSelectedDocumentId(deepLinkedDocId);
+      setRightPanelTab("summary");
+    }
+  }, [deepLinkedDocId]);
 
   const { openModal, closeModal } = useModal();
 
   const { data, flags, actions, viewConfigs } = useDocumentsDomain(
     selectedDocumentId || undefined,
   );
+
+  const isDeepLinkLoading =
+    deepLinkedDocId &&
+    selectedDocumentId === deepLinkedDocId &&
+    flags.isSummaryLoading;
 
   const handleDocumentSelection = (id: string) => {
     setSelectedDocumentId(id);
@@ -46,18 +63,20 @@ export const UploadDocs = (): ReactNode => {
         id={selectedDocumentId}
         document_name={activeFileName || "Unnamed Document"}
         ai_summary={data.activeSummary?.summary_text || ""}
-        document_file_url={documentFileUrl || ""} 
+        document_file_url={documentFileUrl || ""}
         onClose={closeModal}
         onSubmit={(payload) => {
-          console.log("Transmission Payload Compiled:", payload)
-          closeModal()
+          console.log("Transmission Payload Compiled:", payload);
+          closeModal();
         }}
-      />)
-  }
-
+      />,
+    );
+  };
 
   const activeFileName = data.activeDocument?.file_name;
-  const rawDocumentFileUrl = activeFileName ? localPdfCache[activeFileName] : null;
+  const rawDocumentFileUrl = activeFileName
+    ? localPdfCache[activeFileName]
+    : null;
   const documentFileUrl = getSafeDocumentUrl(rawDocumentFileUrl);
 
   return (
@@ -75,7 +94,9 @@ export const UploadDocs = (): ReactNode => {
         {!selectedDocumentId ? (
           <div className="empty-workspace-state">
             <h3>No Document is Active</h3>
-            <p>Upload a brand new File or select an existing one from your vault.</p>
+            <p>
+              Upload a brand new File or select an existing one from your vault.
+            </p>
           </div>
         ) : (
           <div className="active-workspace-wrapper">
@@ -93,26 +114,27 @@ export const UploadDocs = (): ReactNode => {
                 Original PDF
               </button>
 
-              <button
-                className="export-button"
-                onClick={handleDocumentExport}
-              >
+              <button className="export-button" onClick={handleDocumentExport}>
                 Export Summary & Document
               </button>
             </div>
 
             {rightPanelTab === "summary" ? (
-              <DocumentContentPanel
-                selectedDocumentId={selectedDocumentId}
-                contentText={data.activeSummary?.summary_text}
-                isProcessing={flags.isSummaryLoading}
-                isEmpty={flags.isSummaryEmpty}
-                icon={viewConfigs.documentSummary.icon}
-                title={viewConfigs.documentSummary.title}
-                description={viewConfigs.documentSummary.description}
-                emptyIcon={viewConfigs.emptySummary.icon}
-                onRegenerate={actions.reconstructSummary}
-              />
+              isDeepLinkLoading ? (
+                <ShimmerLoader />
+              ) : (
+                <DocumentContentPanel
+                  selectedDocumentId={selectedDocumentId}
+                  contentText={data.activeSummary?.summary_text}
+                  isProcessing={flags.isSummaryLoading}
+                  isEmpty={flags.isSummaryEmpty}
+                  icon={viewConfigs.documentSummary.icon}
+                  title={viewConfigs.documentSummary.title}
+                  description={viewConfigs.documentSummary.description}
+                  emptyIcon={viewConfigs.emptySummary.icon}
+                  onRegenerate={actions.reconstructSummary}
+                />
+              )
             ) : (
               <div className="pdf-viewer-container">
                 <div className="pdf-viewer-header">

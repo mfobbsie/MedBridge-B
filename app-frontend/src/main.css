@@ -188,3 +188,34 @@ html, body {
   border-radius: 12px;
 }
 
+.shimmer-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 1rem;
+}
+
+.shimmer-block {
+  height: 18px;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    #E8F4FD 0%,
+    #D6EAF8 50%,
+    #E8F4FD 100%
+  );
+  animation: shimmer 1.4s infinite linear;
+}
+
+.shimmer-block.short {
+  width: 60%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: 200px 0;
+  }
+}
