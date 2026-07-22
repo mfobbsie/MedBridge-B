@@ -1,0 +1,165 @@
+.calendar-view-container {
+  height: 100%;
+  width: 100%;
+  padding: 24px;
+  position: relative;
+  box-sizing: border-box;
+  background-color: #F7FAFC;
+  color: #1B3A5C;
+}
+
+.calendar-status-message {
+  padding: 24px;
+  background-color: #F7FAFC;
+  color: #1B3A5C;
+}
+
+.calendar-status-message.error {
+  color: #2D7DD2;
+}
+
+/* Modal Overlay & Container */
+.calendar-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal Content Wrapper */
+.calendar-modal-content {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  color: #1f2937;
+  font-family: sans-serif;
+}
+
+.calendar-modal-title {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1B3A5C;
+}
+
+/* Form Controls */
+.calendar-form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #4b5563;
+}
+
+.calendar-form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+/* Modal Action Buttons */
+.calendar-modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  justify-content: flex-start;
+}
+
+.calendar-btn-delete {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  background-color: #ef4444;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.calendar-btn-complete {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  background-color: #10b981;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.calendar-btn-cancel {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  background-color: #ffffff;
+  color: #4b5563;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.calendar-btn-save {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  background-color: #2563eb;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+/* Agenda Custom Views */
+.calendar-agenda-date-btn {
+  background: none;
+  border: none;
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+}
+
+.calendar-agenda-event {
+  cursor: pointer;
+  color: #1B3A5C;
+  font-weight: 500;
+}
+
+.calendar-agenda-event.completed {
+  color: #3ABFBF;
+  text-decoration: line-through;
+}
+
+/* Event Tile Styles (React Big Calendar overrides) */
+.calendar-event-tile {
+  color: #1B3A5C !important;
+  background-color: #E8F4FD !important;
+  border: 1px solid #2D7DD2 !important;
+  opacity: 1;
+}
+
+.calendar-event-tile.completed {
+  border-color: #3ABFBF !important;
+  opacity: 0.75;
+  text-decoration: line-through;
+}
+
+.calendar-event-tile.type-other {
+  background-color: #FFFFFF !important;
+}
