@@ -58,6 +58,22 @@ async def get_document(document_id: UuidStr, user: dict = Depends(get_current_us
         raise HTTPException(status_code=404, detail="Document not found.")
     return doc
 
+@router.get("/documents/{document_id}/file")
+async def get_document_file(document_id: UuidStr, user: dict = Depends(get_current_user)):
+    doc = document_service.get_document(document_id, user["id"])
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found.")
+
+    file_path = doc.get("file_path")
+    if not file_path:
+        raise HTTPException(status_code=404, detail="Original file not found.")
+
+    signed_url = document_service.get_signed_url(file_path)
+    if not signed_url:
+        raise HTTPException(status_code=502, detail="Could not generate file link. Please try again.")
+
+    return {"url": signed_url}
+
 
 @router.delete("/documents/{document_id}", status_code=204)
 async def delete_document(document_id: UuidStr, user: dict = Depends(get_current_user)):
