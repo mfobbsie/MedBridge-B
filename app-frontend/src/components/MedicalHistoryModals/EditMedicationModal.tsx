@@ -55,6 +55,19 @@ export default function MedicationModal({
     }
   };
 
+  const handleStartMedication = () => {
+    if (medication) {
+      actions.modifyMedication(medication.med_id, {
+        name,
+        dosage,
+        frequency,
+        is_active: true,
+        end_date: null,
+      });
+    }
+  };
+
+
   const handleStopMedication = () => {
     if (medication) {
       actions.modifyMedication(medication.med_id, {
@@ -62,6 +75,7 @@ export default function MedicationModal({
         dosage,
         frequency,
         is_active: false,
+        end_date: new Date().toISOString(),
       });
     }
   };
@@ -137,6 +151,14 @@ export default function MedicationModal({
 
           {mode === "edit" && (
             <>
+              <button
+                type="button"
+                className="modal-delete"
+                onClick={handleStartMedication}
+              >
+                Start Medication
+              </button>
+              
               <button
                 type="button"
                 className="modal-delete"

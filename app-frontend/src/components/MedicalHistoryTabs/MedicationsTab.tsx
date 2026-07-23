@@ -40,7 +40,7 @@ export default function MedicationsTab({
           <div key={med.id} className="list-row">
             <span>
               {med.name} — {med.dosage ?? "Unknown dose"},{" "}
-              {med.frequency ?? "Unknown frequency"} (
+              {med.frequency ?? "Unknown frequency"} (Active)
             </span>
 
             <div className="med-actions">
