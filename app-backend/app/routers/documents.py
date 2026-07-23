@@ -6,6 +6,8 @@ from app.schemas.documents import (
     UnderstandingRequest, UnderstandingResponse,
     PrepResponse, DashboardResponse,
     KpiReadingLevel, KpiQuality, KpiSatisfaction,
+    ConfirmPrescriptionMedicationsRequest,
+    ConfirmPrescriptionMedicationsResponse,
 )
 from app.schemas.errors import GENERIC_INTERNAL_ERROR_MESSAGE, groq_timeout_error, groq_unavailable_error
 from app.exceptions import MedBridgeHTTPException
@@ -42,7 +44,13 @@ async def upload_document(
         if "exceeds" in error or "size" in error.lower():
             raise HTTPException(status_code=413, detail=error)
         raise HTTPException(status_code=400, detail=error)
-    return UploadResponse(document_id=result["document_id"], status=result["status"])
+    return UploadResponse(
+        document_id=result["document_id"],
+        file_name=result.get("file_name") or (file.filename or "upload"),
+        status=result["status"],
+        is_prescription=bool(result.get("is_prescription")),
+        extracted_data=result.get("extracted_data"),
+    )
 
 
 @router.get("/documents", response_model=DocumentListResponse)
@@ -82,6 +90,59 @@ async def delete_document(document_id: UuidStr, user: dict = Depends(get_current
         raise HTTPException(status_code=404, detail="Document not found.")
 
 
+@router.post(
+    "/documents/{document_id}/medications/confirm",
+    response_model=ConfirmPrescriptionMedicationsResponse,
+    status_code=201,
+)
+async def confirm_prescription_medications(
+    document_id: UuidStr,
+    payload: ConfirmPrescriptionMedicationsRequest,
+    user: dict = Depends(get_current_user),
+):
+    """Create reviewed medications from a prescription upload and clear pending candidates."""
+    try:
+        created = document_service.confirm_pending_medications(
+            document_id=document_id,
+            user_id=user["id"],
+            medications=payload.medications,
+        )
+    except Exception as e:
+        logger.exception("Failed to confirm prescription medications: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=GENERIC_INTERNAL_ERROR_MESSAGE,
+        ) from e
+
+    if created is None:
+        raise HTTPException(status_code=404, detail="Document not found.")
+
+    return ConfirmPrescriptionMedicationsResponse(
+        document_id=document_id,
+        medications=created,
+    )
+
+
+@router.post("/documents/{document_id}/medications/dismiss", response_model=DocumentResponse)
+async def dismiss_prescription_medications(
+    document_id: UuidStr,
+    user: dict = Depends(get_current_user),
+):
+    """Discard pending medication candidates without creating medication rows."""
+    try:
+        doc = document_service.dismiss_pending_medications(document_id, user["id"])
+    except Exception as e:
+        logger.exception("Failed to dismiss prescription medications: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=GENERIC_INTERNAL_ERROR_MESSAGE,
+        ) from e
+
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found.")
+    return doc
+
+
 @router.get("/documents/{document_id}/summary", response_model=SummaryResponse)
 async def get_summary(document_id: UuidStr, user: dict = Depends(get_current_user)):
     supabase = get_supabase()
@@ -89,31 +150,40 @@ async def get_summary(document_id: UuidStr, user: dict = Depends(get_current_use
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found.")
 
-    # Use actual DB column: health_record_id
+    # Prefer the latest summary when regenerations created multiple rows.
     result = (
         supabase.table("summaries")
         .select("*")
         .eq("health_record_id", document_id)
         .eq("user_id", user["id"])
-        .maybe_single()
+        .order("created_at", desc=True)
+        .limit(1)
         .execute()
     )
-    # added safety check to prevent server from crashing if no summary is present/available. 
-    if not result or not result.data:
+    rows = result.data or []
+    if not rows:
         current_status = doc.get("status", "unknown")
         if current_status in ("uploaded", "processing", "extracted"):
             raise HTTPException(status_code=202, detail=f"Summary still generating. Status: {current_status}")
         if current_status == "failed":
-            raise HTTPException(
-                status_code=502,
-                detail=(
-                    "Summary generation failed. "
-                    f"Use POST /documents/{document_id}/summary to retry."
-                ),
+            reason = doc.get("error_message") or "Summary generation failed."
+            has_extracted_text = bool(
+                doc.get("extracted_text") or doc.get("raw_text")
             )
+            if has_extracted_text:
+                detail = (
+                    f"{reason} "
+                    f"Use POST /documents/{document_id}/summary to retry."
+                )
+            else:
+                detail = (
+                    f"{reason} "
+                    "Please re-upload a clearer photo or a PDF version of this document."
+                )
+            raise HTTPException(status_code=422, detail=detail)
         raise HTTPException(status_code=404, detail="Summary not found.")
 
-    row = result.data
+    row = rows[0]
     return SummaryResponse(
         summary_id=row["id"],
         document_id=row["health_record_id"],

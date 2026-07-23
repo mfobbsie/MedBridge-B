@@ -13,13 +13,13 @@ class Settings(BaseSettings):
     supabase_storage_bucket: str = "medical-documents"
     groq_api_key: str = ""
     groq_model: str = "llama-3.1-8b-instant"
+    groq_vision_model: str = "qwen/qwen3.6-27b"
     app_env: str = "development"
     secret_key: str = "dev-secret-key-change-in-production"
     max_file_size_mb: int = 10
     allowed_origins: str = ""
 
     ocr_confidence_threshold: int = 60
-    tesseract_cmd: str = "tesseract"
     chunk_size_tokens: int = 500
     chunk_overlap_tokens: int = 100
     max_context_tokens: int = 4000
