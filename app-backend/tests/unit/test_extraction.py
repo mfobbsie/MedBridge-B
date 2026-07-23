@@ -135,25 +135,199 @@ def test_unsupported_mime_fails_gracefully():
 
 def test_ocr_low_confidence_sets_flag():
     """OCR below threshold should set low_confidence=True and add a warning."""
-    with patch("app.services.extraction_service.pytesseract") as mock_tess:
-        mock_tess.image_to_data.return_value = {
-            "conf": [30, 25, 40, -1, 35]
-        }
-        mock_tess.image_to_string.return_value = "Some extracted text that is long enough"
-        mock_tess.Output = MagicMock()
-        mock_tess.Output.DICT = "dict"
+    from app.services.extraction_service import ExtractionResult
+    from PIL import Image
+    import io
 
-        # Create a minimal valid JPEG
-        from PIL import Image
-        import io
-        img = Image.new("RGB", (200, 100), color="white")
-        buf = io.BytesIO()
-        img.save(buf, format="JPEG")
-        jpeg_bytes = b"\xff\xd8\xff" + buf.getvalue()[3:]  # Ensure magic bytes
+    img = Image.new("RGB", (200, 100), color="white")
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    jpeg_bytes = buf.getvalue()
 
+    long_text = (
+        "Patient Name John Doe Diagnosis Hypertension Treatment Plan Notes "
+        "Follow up in two weeks with primary care provider"
+    )
+    mock_reader = MagicMock()
+    mock_reader.readtext.return_value = [
+        ([[0, 0], [10, 0], [10, 10], [0, 10]], long_text, 0.35),
+    ]
+
+    with patch(
+        "app.services.extraction_service._extract_ocr_via_vision",
+        return_value=ExtractionResult(
+            text="", method="ocr-vision", confidence=None, success=False,
+            error_message="AI unavailable for test",
+        ),
+    ), patch(
+        "app.services.extraction_service._get_easyocr_reader",
+        return_value=mock_reader,
+    ):
         result = extract_text(jpeg_bytes, "image/jpeg")
-        if result.success:
-            assert result.low_confidence or result.confidence is not None
+        assert result.success
+        assert result.method == "ocr-easyocr"
+        assert result.low_confidence
+        assert result.confidence is not None
+        assert any("low" in w.lower() for w in result.warnings)
+
+
+def test_vision_preferred_for_images():
+    """Groq vision is tried first and can succeed without EasyOCR."""
+    from app.services.extraction_service import ExtractionResult
+    from PIL import Image
+    import io
+
+    img = Image.new("RGB", (200, 100), color="white")
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    jpeg_bytes = buf.getvalue()
+
+    vision_text = (
+        "Patient: Jane Doe\n"
+        "Rx: Lisinopril 10mg once daily\n"
+        "Prescriber: Dr. Smith\n"
+        "Pharmacy fill date: 2026-07-22"
+    )
+    with patch(
+        "app.services.extraction_service._extract_ocr_via_vision",
+        return_value=ExtractionResult(
+            text=vision_text,
+            method="ocr-vision",
+            confidence=None,
+            success=True,
+        ),
+    ) as vision_mock, patch(
+        "app.services.extraction_service._extract_ocr_via_easyocr"
+    ) as easy_mock:
+        result = extract_text(jpeg_bytes, "image/jpeg")
+        assert result.success
+        assert result.method == "ocr-vision"
+        assert "Lisinopril" in result.text
+        vision_mock.assert_called_once()
+        easy_mock.assert_not_called()
+
+
+def test_easyocr_used_when_vision_fails():
+    """When Groq vision fails, EasyOCR can still succeed."""
+    from app.services.extraction_service import ExtractionResult
+    from PIL import Image
+    import io
+
+    img = Image.new("RGB", (200, 100), color="white")
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    jpeg_bytes = buf.getvalue()
+
+    ocr_text = (
+        "Patient: Jane Doe\n"
+        "Rx: Lisinopril 10mg once daily\n"
+        "Prescriber: Dr. Smith\n"
+        "Pharmacy fill date: 2026-07-22"
+    )
+    with patch(
+        "app.services.extraction_service._extract_ocr_via_vision",
+        return_value=ExtractionResult(
+            text="", method="ocr-vision", confidence=None, success=False,
+            error_message="Vision OCR failed",
+        ),
+    ), patch(
+        "app.services.extraction_service._extract_ocr_via_easyocr",
+        return_value=ExtractionResult(
+            text=ocr_text,
+            method="ocr-easyocr",
+            confidence=88.0,
+            success=True,
+        ),
+    ) as easy_mock:
+        result = extract_text(jpeg_bytes, "image/jpeg")
+        assert result.success
+        assert result.method == "ocr-easyocr"
+        assert "Lisinopril" in result.text
+        easy_mock.assert_called_once()
+
+
+def test_ocr_prefers_actionable_config_error():
+    """When all OCR stages fail, prefer vision/config errors over generic ones."""
+    from app.services.extraction_service import ExtractionResult, _extract_ocr
+    from PIL import Image
+    import io
+
+    img = Image.new("RGB", (200, 100), color="white")
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    jpeg_bytes = buf.getvalue()
+
+    actionable = (
+        "The configured vision model (bad-model) is unavailable "
+        "on this Groq account. Set GROQ_VISION_MODEL to a vision-capable model "
+        "you have access to, then restart the server."
+    )
+    with patch(
+        "app.services.extraction_service._extract_ocr_via_easyocr",
+        return_value=ExtractionResult(
+            text="",
+            method="ocr-easyocr",
+            confidence=None,
+            success=False,
+            error_message=(
+                "Text could not be extracted from this image. "
+                "Please try uploading a clearer photo or a PDF version."
+            ),
+        ),
+    ), patch(
+        "app.services.extraction_service._extract_ocr_via_vision",
+        return_value=ExtractionResult(
+            text="",
+            method="ocr-vision",
+            confidence=None,
+            success=False,
+            error_message=actionable,
+        ),
+    ):
+        result = _extract_ocr(jpeg_bytes, "image/jpeg")
+        assert not result.success
+        assert result.error_message == actionable
+
+
+def test_easyocr_applies_preprocess_image():
+    """EasyOCR path should preprocess the image before readtext."""
+    from app.services.extraction_service import ExtractionResult
+    from PIL import Image
+    import io
+    import numpy as np
+
+    img = Image.new("RGB", (200, 100), color="white")
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG")
+    jpeg_bytes = buf.getvalue()
+
+    mock_reader = MagicMock()
+    mock_reader.readtext.return_value = [
+        ([[0, 0], [10, 0], [10, 10], [0, 10]], "Patient Name John Doe Diagnosis Hypertension Treatment Plan Notes", 0.95),
+    ]
+
+    with patch(
+        "app.services.extraction_service._extract_ocr_via_vision",
+        return_value=ExtractionResult(
+            text="", method="ocr-vision", confidence=None, success=False,
+            error_message="Vision skipped for EasyOCR preprocess test",
+        ),
+    ), patch(
+        "app.services.extraction_service._get_easyocr_reader",
+        return_value=mock_reader,
+    ), patch(
+        "app.services.extraction_service._preprocess_image",
+        wraps=__import__(
+            "app.services.extraction_service", fromlist=["_preprocess_image"]
+        )._preprocess_image,
+    ) as preprocess_mock:
+        result = extract_text(jpeg_bytes, "image/jpeg")
+        preprocess_mock.assert_called_once()
+        assert result.success
+        assert result.method == "ocr-easyocr"
+        mock_reader.readtext.assert_called_once()
+        called_arr = mock_reader.readtext.call_args[0][0]
+        assert isinstance(called_arr, np.ndarray)
 
 
 def test_corrupt_image_fails_gracefully():

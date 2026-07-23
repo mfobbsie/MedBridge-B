@@ -42,7 +42,7 @@ PyJWT==2.13.0
 pymupdf==1.28.0
 pypdfium2==5.11.0
 pyphen==0.17.2
-pytesseract==0.3.13
+easyocr==1.7.2
 pytest==9.1.1
 pytest-timeout==2.4.0
 python-dotenv==1.2.2
