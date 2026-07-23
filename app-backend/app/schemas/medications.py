@@ -65,8 +65,14 @@ class MedicationCreate(_MedicationInputBase):
             object.__setattr__(self, "status", "active")
         return self
 
-    def to_db_row(self, *, medication_id: str, user_id: str) -> dict:
-        return {
+    def to_db_row(
+        self,
+        *,
+        medication_id: str,
+        user_id: str,
+        health_record_id: Optional[str] = None,
+    ) -> dict:
+        row = {
             "id": medication_id,
             "user_id": user_id,
             "name": self.name,
@@ -82,6 +88,9 @@ class MedicationCreate(_MedicationInputBase):
             "reason": self.reason,
             "notes": self.notes,
         }
+        if health_record_id:
+            row["health_record_id"] = health_record_id
+        return row
 
 
 class MedicationUpdate(_MedicationInputBase):

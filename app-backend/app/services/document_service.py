@@ -104,6 +104,8 @@ def _normalize(row: dict) -> dict:
         row["file_size_bytes"] = 0
     if "created_at" in row and "uploaded_at" not in row:
         row["uploaded_at"] = row["created_at"]
+    if row.get("is_prescription") is None:
+        row["is_prescription"] = False
     return row
 
 
@@ -190,9 +192,24 @@ def upload_document(
 
     file_extension = safe_name.split(".")[-1].lower() if "." in safe_name else "unknown"
 
+    # Sync prescription classify/extract for upload response (non-fatal)
+    is_prescription = False
+    extracted_data = None
+    pending_rows: list[dict] = []
+    try:
+        from app.services.prescription_service import analyze_prescription_file
+
+        rx = analyze_prescription_file(file_bytes, mime_type)
+        if rx.success and rx.is_prescription and rx.medications:
+            is_prescription = True
+            pending_rows = rx.pending_rows()
+            extracted_data = rx.primary_extracted_data()
+    except Exception as e:
+        logger.warning("Sync prescription analysis failed (non-fatal): %s", e)
+
     # Create health_records row using ACTUAL column names
     try:
-        supabase.table("health_records").insert({
+        row = {
             "id": document_id,
             "user_id": user_id,
             "filename": display_name,
@@ -201,7 +218,10 @@ def upload_document(
             "file_size_bytes": len(file_bytes),
             "source_type": "upload",
             "status": "uploaded",
-        }).execute()
+            "is_prescription": is_prescription,
+            "pending_medications": pending_rows if pending_rows else None,
+        }
+        supabase.table("health_records").insert(row).execute()
     except Exception as e:
         logger.exception(f"health_records insert failed: {e}")
         return {"success": False, "error": "Database write failed. Please try again."}
@@ -211,7 +231,14 @@ def upload_document(
     else:
         _process_document(document_id, user_id, file_bytes, mime_type)
 
-    return {"success": True, "document_id": document_id, "status": "processing"}
+    return {
+        "success": True,
+        "document_id": document_id,
+        "file_name": display_name,
+        "status": "processing",
+        "is_prescription": is_prescription,
+        "extracted_data": extracted_data,
+    }
 
 
 # ── Processing pipeline ───────────────────────────────────────────────────────
@@ -270,6 +297,34 @@ def _process_document(document_id: str, user_id: str, file_bytes: bytes, mime_ty
             "reading_level_score": quality.reading_level,
             "quality_passed": quality.passed,
         }).execute()
+
+        # Prescription detection only if upload-time analysis did not already set it
+        try:
+            existing = (
+                supabase.table("health_records")
+                .select("is_prescription, pending_medications")
+                .eq("id", document_id)
+                .maybe_single()
+                .execute()
+            )
+            already_set = bool(
+                existing
+                and existing.data
+                and existing.data.get("is_prescription")
+                and existing.data.get("pending_medications")
+            )
+            if not already_set:
+                from app.services.prescription_service import extract_prescription_medications
+
+                rx = extract_prescription_medications(extraction.text)
+                if rx.success and rx.is_prescription and rx.medications:
+                    supabase.table("health_records").update({
+                        "is_prescription": True,
+                        "pending_medications": rx.pending_rows(),
+                    }).eq("id", document_id).execute()
+        except Exception as e:
+            logger.warning("Prescription extraction failed (non-fatal) for %s: %s", document_id, e)
+
         _update_status(document_id, "summarized")
 
     except Exception as e:
@@ -336,3 +391,50 @@ def get_signed_url(file_path: str) -> Optional[str]:
     except Exception as e:
         logger.warning(f"Signed URL generation failed: {e}")
         return None
+
+
+def confirm_pending_medications(
+    document_id: str,
+    user_id: str,
+    medications: list,
+) -> Optional[list[dict]]:
+    """
+    Insert reviewed medications linked to the document and clear pending_medications.
+    Returns created rows, or None if the document is not found / not owned.
+    """
+    supabase = get_supabase()
+    doc = get_document(document_id, user_id)
+    if not doc:
+        return None
+
+    rows = [
+        med.to_db_row(
+            medication_id=str(uuid.uuid4()),
+            user_id=user_id,
+            health_record_id=document_id,
+        )
+        for med in medications
+    ]
+
+    result = supabase.table("medications").insert(rows).execute()
+    created = result.data or []
+
+    supabase.table("health_records").update({
+        "pending_medications": None,
+    }).eq("id", document_id).eq("user_id", user_id).execute()
+
+    return created
+
+
+def dismiss_pending_medications(document_id: str, user_id: str) -> Optional[dict]:
+    """Clear pending_medications without creating medication rows. Keeps is_prescription."""
+    supabase = get_supabase()
+    doc = get_document(document_id, user_id)
+    if not doc:
+        return None
+
+    supabase.table("health_records").update({
+        "pending_medications": None,
+    }).eq("id", document_id).eq("user_id", user_id).execute()
+
+    return get_document(document_id, user_id)

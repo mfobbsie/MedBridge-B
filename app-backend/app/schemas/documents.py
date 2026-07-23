@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 from enum import Enum
+from app.schemas.medications import MedicationCreate, MedicationResponse
 from app.schemas.patient_profile import PatientProfileResponse
 from app.utils.validation import NonEmptyStr
 
@@ -15,6 +16,31 @@ class DocumentStatus(str, Enum):
     FAILED = "failed"
 
 
+class PendingMedication(BaseModel):
+    name: str
+    dose: Optional[str] = None
+    dosage: Optional[str] = None
+    frequency: Optional[str] = None
+    route: Optional[str] = None
+    prescribing_provider: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    reason: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class ExtractedPrescriptionData(BaseModel):
+    name: str
+    dosage: Optional[str] = None
+    frequency: Optional[str] = None
+    route: Optional[str] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    prescribing_provider: Optional[str] = None
+    reason: Optional[str] = None
+    notes: Optional[str] = None
+
+
 class DocumentResponse(BaseModel):
     document_id: str
     user_id: str
@@ -24,6 +50,18 @@ class DocumentResponse(BaseModel):
     status: DocumentStatus
     uploaded_at: datetime
     error_message: Optional[str] = None
+    extracted_text: Optional[str] = None
+    is_prescription: bool = False
+    pending_medications: Optional[list[PendingMedication]] = None
+
+
+class ConfirmPrescriptionMedicationsRequest(BaseModel):
+    medications: list[MedicationCreate] = Field(..., min_length=1)
+
+
+class ConfirmPrescriptionMedicationsResponse(BaseModel):
+    document_id: str
+    medications: list[MedicationResponse]
 
 
 class DocumentListResponse(BaseModel):
@@ -33,6 +71,9 @@ class DocumentListResponse(BaseModel):
 
 class UploadResponse(BaseModel):
     document_id: str
+    file_name: str
+    is_prescription: bool = False
+    extracted_data: Optional[ExtractedPrescriptionData] = None
     status: DocumentStatus
     message: str = "Document uploaded successfully. Processing has started."
 

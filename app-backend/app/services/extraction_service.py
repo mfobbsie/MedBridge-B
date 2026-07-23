@@ -3,31 +3,45 @@ Text extraction service.
 
 Handles three document types:
   - PDF        → pdfplumber (fallback: PyMuPDF)
-  - PNG/JPEG   → Tesseract OCR with image preprocessing
+  - PNG/JPEG   → Groq vision, then EasyOCR (pip)
   - Plain text → direct read
 
 Returns ExtractionResult with text, confidence, and any warnings.
 """
 
+import base64
 import io
 import logging
+import threading
 from dataclasses import dataclass, field
 from typing import Optional
 
 import pdfplumber
 import fitz  # PyMuPDF fallback
-import pytesseract
+from groq import Groq
 from PIL import Image, ImageFilter, ImageEnhance
+from tenacity import retry, stop_after_attempt, wait_exponential
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
+
+_easyocr_reader = None
+_easyocr_lock = threading.Lock()
+
+VISION_OCR_SYSTEM_PROMPT = """You are MedBridge, a document text extraction tool.
+
+Extract ALL readable text from the document image exactly as it appears.
+Preserve line breaks and reading order where possible.
+Do not invent text that is not visible.
+Do not summarize, explain, or add commentary.
+Return only the extracted text."""
 
 
 @dataclass
 class ExtractionResult:
     text: str
-    method: str                     # "pdf" | "ocr" | "text"
-    confidence: Optional[float]     # 0-100 for OCR; None for PDF/text
+    method: str                     # "pdf" | "ocr-easyocr" | "ocr-vision" | "text"
+    confidence: Optional[float]     # 0-100 for OCR; None for PDF/text/vision
     low_confidence: bool = False
     warnings: list[str] = field(default_factory=list)
     success: bool = True
@@ -43,7 +57,7 @@ def extract_text(file_bytes: bytes, mime_type: str) -> ExtractionResult:
         if mime_type == "application/pdf":
             return _extract_pdf(file_bytes)
         elif mime_type in ("image/png", "image/jpeg", "image/jpg"):
-            return _extract_ocr(file_bytes)
+            return _extract_ocr(file_bytes, mime_type)
         elif mime_type in ("text/plain",):
             return _extract_text(file_bytes)
         else:
@@ -138,7 +152,7 @@ def _pdf_ocr_fallback(file_bytes: bytes) -> ExtractionResult:
         pix = page.get_pixmap(matrix=mat)
         img_bytes = pix.tobytes("png")
         doc.close()
-        return _extract_ocr(img_bytes)
+        return _extract_ocr(img_bytes, "image/png")
     except Exception as e:
         logger.warning(f"PDF OCR fallback failed: {e}")
         return ExtractionResult(
@@ -149,51 +163,87 @@ def _pdf_ocr_fallback(file_bytes: bytes) -> ExtractionResult:
 
 # ── OCR ───────────────────────────────────────────────────────────────────────
 
-def _extract_ocr(file_bytes: bytes) -> ExtractionResult:
-    """
-    Preprocessing pipeline:
-      1. Load image
-      2. Resize to target DPI (300 DPI equivalent)
-      3. Convert to grayscale
-      4. Enhance contrast
-      5. Binarize (threshold)
-      6. Deskew (approximate via rotation detection)
-      7. Run Tesseract, collect confidence scores
-    """
+def _get_easyocr_reader():
+    """Lazy-load a shared EasyOCR reader (models download on first use)."""
+    global _easyocr_reader
+    if _easyocr_reader is not None:
+        return _easyocr_reader
+    with _easyocr_lock:
+        if _easyocr_reader is not None:
+            return _easyocr_reader
+        import easyocr
+
+        logger.info("Initializing EasyOCR reader (first run may download models)...")
+        _easyocr_reader = easyocr.Reader(["en"], gpu=False, verbose=False)
+        return _easyocr_reader
+
+
+def _extract_ocr_via_easyocr(file_bytes: bytes) -> ExtractionResult:
+    """Extract text with EasyOCR (pip package)."""
     settings = get_settings()
 
     try:
         img = Image.open(io.BytesIO(file_bytes))
-    except Exception as e:
+        img = _preprocess_image(img)
+        # EasyOCR expects RGB ndarray (H, W, C).
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+    except Exception:
         return ExtractionResult(
-            text="", method="ocr", confidence=None, success=False,
+            text="",
+            method="ocr-easyocr",
+            confidence=None,
+            success=False,
             error_message="Could not open image file. Please ensure it is a valid PNG or JPEG.",
         )
 
-    img = _preprocess_image(img)
-
-    # Run Tesseract with confidence data
     try:
-        ocr_data = pytesseract.image_to_data(
-            img, output_type=pytesseract.Output.DICT, lang="eng"
+        import numpy as np
+
+        reader = _get_easyocr_reader()
+        results = reader.readtext(np.array(img), detail=1, paragraph=False)
+    except ImportError as e:
+        logger.warning("EasyOCR dependencies missing: %s", e)
+        return ExtractionResult(
+            text="",
+            method="ocr-easyocr",
+            confidence=None,
+            success=False,
+            error_message=(
+                "EasyOCR is not installed in this environment. "
+                "Run: pip install easyocr"
+            ),
         )
     except Exception as e:
-        logger.exception(f"Tesseract failed: {e}")
+        logger.exception("EasyOCR failed: %s", e)
         return ExtractionResult(
-            text="", method="ocr", confidence=None, success=False,
+            text="",
+            method="ocr-easyocr",
+            confidence=None,
+            success=False,
             error_message=(
                 "Text could not be extracted from this image. "
                 "Please try uploading a clearer photo or a PDF version."
             ),
         )
 
-    # Calculate mean confidence (exclude -1 entries which are layout markers)
-    confidences = [c for c in ocr_data["conf"] if c != -1]
-    mean_confidence = sum(confidences) / len(confidences) if confidences else 0
+    if not results:
+        return ExtractionResult(
+            text="",
+            method="ocr-easyocr",
+            confidence=0.0,
+            success=False,
+            error_message=(
+                "Very little text was found in this image. "
+                "Please upload a clearer photo or a PDF version of your document."
+            ),
+        )
 
-    text = pytesseract.image_to_string(img, lang="eng")
-    text = _clean_text(text)
-
+    # results: list of (bbox, text, confidence 0-1)
+    lines = [str(item[1]).strip() for item in results if item[1] and str(item[1]).strip()]
+    confidences = [float(item[2]) * 100.0 for item in results if len(item) >= 3]
+    text = _clean_text("\n".join(lines))
+    mean_confidence = sum(confidences) / len(confidences) if confidences else 0.0
     low_confidence = mean_confidence < settings.ocr_confidence_threshold
     warnings = []
 
@@ -206,7 +256,10 @@ def _extract_ocr(file_bytes: bytes) -> ExtractionResult:
 
     if len(text.strip()) < 50:
         return ExtractionResult(
-            text="", method="ocr", confidence=mean_confidence, success=False,
+            text="",
+            method="ocr-easyocr",
+            confidence=round(mean_confidence, 1),
+            success=False,
             error_message=(
                 "Very little text was found in this image. "
                 "Please upload a clearer photo or a PDF version of your document."
@@ -215,11 +268,207 @@ def _extract_ocr(file_bytes: bytes) -> ExtractionResult:
 
     return ExtractionResult(
         text=text,
-        method="ocr",
+        method="ocr-easyocr",
         confidence=round(mean_confidence, 1),
         low_confidence=low_confidence,
         warnings=warnings,
     )
+
+
+def _image_to_data_url(image_bytes: bytes, mime_type: str = "image/png") -> str:
+    """Encode image for Groq vision; shrink large payloads to stay under size guidance."""
+    data = image_bytes
+    if len(base64.b64encode(data)) > 3_500_000:
+        try:
+            img = Image.open(io.BytesIO(data))
+            img = img.convert("RGB")
+            img.thumbnail((1600, 1600))
+            buf = io.BytesIO()
+            img.save(buf, format="JPEG", quality=85)
+            data = buf.getvalue()
+            mime_type = "image/jpeg"
+        except Exception as e:
+            logger.warning("Image shrink failed: %s", e)
+    b64 = base64.b64encode(data).decode("ascii")
+    return f"data:{mime_type};base64,{b64}"
+
+
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=10),
+    reraise=True,
+    retry=lambda rs: not _is_permanent_vision_error(rs.outcome.exception() if rs.outcome else None),
+)
+def _call_vision_ocr(client: Groq, model: str, messages: list[dict]) -> str:
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        max_tokens=2000,
+        temperature=0.1,
+    )
+    return (response.choices[0].message.content or "").strip()
+
+
+def _is_permanent_vision_error(exc: Optional[BaseException]) -> bool:
+    if exc is None:
+        return False
+    err = str(exc).lower()
+    return (
+        "model_not_found" in err
+        or "does not exist" in err
+        or "do not have access" in err
+        or "model_decommissioned" in err
+        or "decommissioned" in err
+    )
+
+
+def _extract_ocr_via_vision(file_bytes: bytes, mime_type: str) -> ExtractionResult:
+    """Extract text from an image using Groq vision (no local OCR install required)."""
+    settings = get_settings()
+    if not settings.groq_api_key:
+        return ExtractionResult(
+            text="",
+            method="ocr-vision",
+            confidence=None,
+            success=False,
+            error_message="AI service is not configured.",
+        )
+
+    try:
+        Image.open(io.BytesIO(file_bytes))
+    except Exception:
+        return ExtractionResult(
+            text="",
+            method="ocr-vision",
+            confidence=None,
+            success=False,
+            error_message="Could not open image file. Please ensure it is a valid PNG or JPEG.",
+        )
+
+    client = Groq(api_key=settings.groq_api_key)
+    data_url = _image_to_data_url(file_bytes, mime_type)
+    messages = [
+        {"role": "system", "content": VISION_OCR_SYSTEM_PROMPT},
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Extract all readable text from this medical document image.",
+                },
+                {"type": "image_url", "image_url": {"url": data_url}},
+            ],
+        },
+    ]
+
+    try:
+        text = _clean_text(_call_vision_ocr(client, settings.groq_vision_model, messages))
+    except Exception as e:
+        logger.exception("Vision OCR failed: %s", e)
+        err = str(e).lower()
+        if "model_not_found" in err or "does not exist" in err or "do not have access" in err:
+            error_message = (
+                f"The configured vision model ({settings.groq_vision_model}) is unavailable "
+                "on this Groq account. Set GROQ_VISION_MODEL to a vision-capable model "
+                "you have access to, then restart the server."
+            )
+        elif "model_decommissioned" in err or "decommissioned" in err:
+            error_message = (
+                f"The configured vision model ({settings.groq_vision_model}) is no longer "
+                "supported by Groq. Update GROQ_VISION_MODEL in your .env and restart."
+            )
+        else:
+            error_message = (
+                "Text could not be extracted from this image. "
+                "Please try uploading a clearer photo or a PDF version."
+            )
+        return ExtractionResult(
+            text="",
+            method="ocr-vision",
+            confidence=None,
+            success=False,
+            error_message=error_message,
+        )
+
+    if len(text.strip()) < 50:
+        return ExtractionResult(
+            text="",
+            method="ocr-vision",
+            confidence=None,
+            success=False,
+            error_message=(
+                "Very little text was found in this image. "
+                "Please upload a clearer photo or a PDF version of your document."
+            ),
+        )
+
+    return ExtractionResult(
+        text=text,
+        method="ocr-vision",
+        confidence=None,
+        warnings=["Text was extracted with AI vision OCR and may contain minor errors."],
+    )
+
+
+def _is_actionable_ocr_error(message: Optional[str]) -> bool:
+    """True when the message points at config/install issues the user can fix."""
+    if not message:
+        return False
+    lower = message.lower()
+    return any(
+        token in lower
+        for token in (
+            "not installed",
+            "not configured",
+            "not available",
+            "unavailable",
+            "groq_vision_model",
+            "vision model",
+            "does not exist",
+            "do not have access",
+            "decommissioned",
+            "no longer supported",
+            "pip install",
+            "set groq",
+            "update groq_vision_model",
+        )
+    )
+
+
+def _prefer_ocr_error(
+    *results: ExtractionResult,
+) -> ExtractionResult:
+    """Prefer actionable config/install errors over generic extraction failures."""
+    with_message = [r for r in results if r.error_message]
+    for result in with_message:
+        if _is_actionable_ocr_error(result.error_message):
+            return result
+    return with_message[0] if with_message else results[0]
+
+
+def _extract_ocr(file_bytes: bytes, mime_type: str = "image/png") -> ExtractionResult:
+    """
+    Extract text from an image.
+
+    Order: Groq vision → EasyOCR (pip).
+    """
+    vision_result = _extract_ocr_via_vision(file_bytes, mime_type)
+    if vision_result.success:
+        return vision_result
+    logger.info(
+        "Vision OCR stage failed: %s",
+        vision_result.error_message or "no text extracted",
+    )
+
+    easyocr_result = _extract_ocr_via_easyocr(file_bytes)
+    if easyocr_result.success:
+        return easyocr_result
+    logger.info(
+        "EasyOCR stage failed: %s",
+        easyocr_result.error_message or "no text extracted",
+    )
+
+    return _prefer_ocr_error(vision_result, easyocr_result)
 
 
 def _preprocess_image(img: Image.Image) -> Image.Image:
