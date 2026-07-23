@@ -32,25 +32,31 @@ export const UploadDocs = (): ReactNode => {
     "summary",
   );
 
-  useEffect(() => {
-    if (deepLinkedDocId) {
-      setSelectedDocumentId(deepLinkedDocId);
-      setRightPanelTab("summary");
-    }
-  }, [deepLinkedDocId]);
-
-  const { openModal, closeModal } = useModal();
+  const [isDeepLinkLoading, setIsDeepLinkLoading] = useState(false);
 
   const { data, flags, actions, viewConfigs } = useDocumentsDomain(
     selectedDocumentId || undefined,
   );
 
-  const isDeepLinkLoading =
-    deepLinkedDocId &&
-    selectedDocumentId === deepLinkedDocId &&
-    flags.isSummaryLoading;
+  useEffect(() => {
+    if (deepLinkedDocId) {
+      setIsDeepLinkLoading(true); 
+      setSelectedDocumentId(deepLinkedDocId);
+      setRightPanelTab("summary");
+    }
+  }, [deepLinkedDocId]);
+
+  useEffect(() => {
+    if (!flags.isSummaryLoading && isDeepLinkLoading) {
+      setIsDeepLinkLoading(false); // shimmer OFF
+    }
+  }, [flags.isSummaryLoading, isDeepLinkLoading]);
+
+  const { openModal, closeModal } = useModal();
+
 
   const handleDocumentSelection = (id: string) => {
+    setIsDeepLinkLoading(false);
     setSelectedDocumentId(id);
     setRightPanelTab("summary");
   };
