@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useMedicationDomain } from "../../hooks/useMedicationDomain";
 import "./Modal.css";
 import "../../main.css";
+import type { MedicationResponse } from "../../types/medication";
 
 interface MedicationModalProps {
   isOpen: boolean;
@@ -31,6 +32,19 @@ export default function MedicationModal({
   const [startDate, setStartDate] = useState(medication?.start_date || "");
   const [isActive, setIsActive] = useState(medication?.is_active ?? true);
 
+  const updateMedication = (
+    updates: Partial<MedicationResponse>,
+  ) => {
+    if (!medication) return;
+
+    actions.modifyMedication(medication.med_id, {
+      name,
+      dosage,
+      frequency,
+      ...updates,
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -56,28 +70,18 @@ export default function MedicationModal({
   };
 
   const handleStartMedication = () => {
-    if (medication) {
-      actions.modifyMedication(medication.med_id, {
-        name,
-        dosage,
-        frequency,
+    updateMedication({
         is_active: true,
         end_date: null,
       });
-    }
   };
 
 
   const handleStopMedication = () => {
-    if (medication) {
-      actions.modifyMedication(medication.med_id, {
-        name,
-        dosage,
-        frequency,
+    updateMedication({
         is_active: false,
         end_date: new Date().toISOString(),
       });
-    }
   };
 
   const handleDeleteMedication = () => {
