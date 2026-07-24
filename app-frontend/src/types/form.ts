@@ -6,6 +6,7 @@ export interface FormFactoryConfig {
   onSubmit: (values: Record<string, string>) => void;
   isLoading: boolean;
   activeError: Error | null;
+  loadingLabel?:string;
   submitLabel: string;
   initialData?: Record<string, string>;
 }
