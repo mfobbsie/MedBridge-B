@@ -10,7 +10,7 @@ interface MedicationModalProps {
   onClose: () => void;
   mode: "add" | "edit";
   medication?: {
-    med_id: string;
+    id: string;
     name: string;
     dosage: string;
     frequency: string;
@@ -37,7 +37,7 @@ export default function MedicationModal({
   ) => {
     if (!medication) return;
 
-    actions.modifyMedication(medication.med_id, {
+    actions.modifyMedication(medication.id, {
       name,
       dosage,
       frequency,
@@ -59,7 +59,7 @@ export default function MedicationModal({
     }
 
     if (mode === "edit" && medication) {
-      actions.modifyMedication(medication.med_id, {
+      actions.modifyMedication(medication.id, {
         name,
         dosage,
         frequency,
@@ -80,13 +80,13 @@ export default function MedicationModal({
   const handleStopMedication = () => {
     updateMedication({
         is_active: false,
-        end_date: new Date().toISOString(),
+        end_date: new Date().toISOString().split("T")[0],
       });
   };
 
   const handleDeleteMedication = () => {
     if (medication) {
-      actions.removeMedication(medication.med_id);
+      actions.removeMedication(medication.id);
     }
   };
 
