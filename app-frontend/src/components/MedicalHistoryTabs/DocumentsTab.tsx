@@ -1,24 +1,29 @@
 import type { DocumentResponse } from "../../types/documents";
-import {useGetDocumentFileUrl} from "../../api/documents.queries";
+import { useGetDocumentFileUrl } from "../../api/documents.queries";
+import { useNavigate } from "react-router-dom";
 
 interface DocumentsTabProps {
   documents: DocumentResponse[];
-  onEditDocument: (doc: DocumentResponse) => void;
   onDeleteDocument: (id: string) => void;
 }
 
 export default function DocumentsTab({
   documents,
-  onEditDocument,
+  onDeleteDocument,
 }: DocumentsTabProps) {
   const { mutate: getFileUrl } = useGetDocumentFileUrl();
+  const navigate = useNavigate();
 
-  const handleOpenDocument = (document_id: string) => {
+  const handleOpenPdf = (document_id: string) => {
     getFileUrl(document_id, {
       onSuccess: (data) => {
         window.open(data.url, "_blank", "noopener,noreferrer");
       },
     });
+  };
+
+  const handleOpenSummary = (document_id: string) => {
+    navigate(`/upload-docs?doc=${document_id}`);
   };
 
   const sortedDocuments = [...documents].sort(
@@ -34,23 +39,26 @@ export default function DocumentsTab({
         sortedDocuments.map((doc) => (
           <div key={doc.document_id} className="list-row">
             <span>
-              <span
-                onClick={() => handleOpenDocument(doc.document_id)}
-                className="document-link"
-                style={{ cursor: "pointer" }}
-              >
-                {doc.file_name}
-              </span>
-              {" — "}
-              {doc.status} ({new Date(doc.uploaded_at).toLocaleDateString()})
+              {doc.file_name} — {doc.status} (
+              {new Date(doc.uploaded_at).toLocaleDateString()})
             </span>
 
-            <button
-              className="modal-delete"
-              onClick={() => onEditDocument(doc)}
-            >
-              delete
-            </button>
+            <div className="doc-actions">
+              <button onClick={() => handleOpenPdf(doc.document_id)}>
+                View PDF
+              </button>
+
+              <button onClick={() => handleOpenSummary(doc.document_id)}>
+                View Summary
+              </button>
+
+              <button
+                className="modal-delete"
+                onClick={() => onDeleteDocument(doc.document_id)}
+              >
+                Delete
+              </button>
+            </div>
           </div>
         ))
       ) : (
@@ -59,4 +67,3 @@ export default function DocumentsTab({
     </div>
   );
 }
-

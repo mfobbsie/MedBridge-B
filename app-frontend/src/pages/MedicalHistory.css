@@ -119,4 +119,77 @@
   font-size: 18px;
   color: #1B3A5C;
 }
+/* === DOCUMENT ACTION BUTTON GROUP === */
+.doc-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Shared button style */
+.doc-actions button {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #2D7DD2; /* blue border */
+  background: #E8F4FD;       /* light blue background */
+  color: #1B3A5C;            /* deep navy text */
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Hover state — teal highlight */
+.doc-actions button:hover {
+  background: #3ABFBF; /* teal */
+  color: white;
+  border-color: #3ABFBF;
+}
+
+
+.doc-actions .modal-delete {
+  border-color: #D9534F;
+  background: #FCE8E6;
+  color: #A94442;
+}
+
+.doc-actions .modal-delete:hover {
+  background: #D9534F;
+  color: white;
+  border-color: #D9534F;
+}
+
+.med-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.med-actions button {
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #2D7DD2;
+  background: #E8F4FD;
+  color: #1B3A5C;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.med-actions button:hover {
+  background: #3ABFBF;
+  color: white;
+  border-color: #3ABFBF;
+}
+
+.med-actions .modal-delete {
+  border-color: #D9534F;
+  background: #FCE8E6;
+  color: #A94442;
+}
+
+.med-actions .modal-delete:hover {
+  background: #D9534F;
+  color: white;
+  border-color: #D9534F;
+}
 

@@ -35,7 +35,8 @@ export const MedicalHistory = () => {
   const { data: profileDomain } = useUserProfileDomain();
   const { data: documentsDomain, actions: documentActions } =
     useDocumentsDomain();
-  const { data: medicationsDomain } = useMedicationDomain();
+  const { data: medicationsDomain, actions: medicationActions } =
+    useMedicationDomain();
   const { data: contactsDomain } = useTrustedContactsDomain();
   const { data: providersDomain } = useProvidersDomain();
   const { data: settingsDomain } = useUserSettingsDomain();
@@ -64,13 +65,32 @@ export const MedicalHistory = () => {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   const [showDocumentModal, setShowDocumentModal] = useState(false);
-  const [editingDocument, setEditingDocument] =
+  const [editingDocument] =
     useState<DocumentResponse | null>(null);
 
   const [showAddModal, setShowAddModal] = useState(false);
 const [showEditModal, setShowEditModal] = useState(false);
   const [editingMedication, setEditingMedication] =
     useState<MedicationResponse | null>(null);
+
+  const handleStopMedication = (med: MedicationResponse) => {
+    medicationActions.modifyMedication(med.id, {
+      is_active: false,
+      end_date: new Date().toISOString(),
+    });
+  };
+
+  const handleStartMedication = (med: MedicationResponse) => {
+    medicationActions.modifyMedication(med.id, {
+      is_active: true,
+      end_date: null,
+    });
+  };
+
+  const handleDeleteMedication = (id: string) => {
+    medicationActions.removeMedication(id);
+  };
+
 
 const mapAccessLevel = (level: string): "read" | "full" => {
   return level === "read" ? "full" : "read";
@@ -131,10 +151,6 @@ const mapAccessLevel = (level: string): "read" | "full" => {
           {activeTab === "documents" && (
             <DocumentsTab
               documents={documents}
-              onEditDocument={(doc) => {
-                setEditingDocument(doc);
-                setShowDocumentModal(true);
-              }}
               onDeleteDocument={(id) => documentActions.deleteFile(id)}
             />
           )}
@@ -150,6 +166,9 @@ const mapAccessLevel = (level: string): "read" | "full" => {
                 setShowEditModal(true);
               }}
               onAddMedication={() => setShowAddModal(true)}
+              onStopMedication={handleStopMedication}
+              onStartMedication={handleStartMedication}
+              onDeleteMedication={handleDeleteMedication}
             />
           )}
         </div>
