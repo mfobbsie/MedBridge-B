@@ -253,7 +253,7 @@ const mapAccessLevel = (level: string): "read" | "full" => {
           onClose={() => setShowEditModal(false)}
           mode="edit"
           medication={{
-            med_id: editingMedication.id,
+            id: editingMedication.id,
             name: editingMedication.name,
             dosage: editingMedication.dosage ?? "",
             frequency: editingMedication.frequency ?? "",
