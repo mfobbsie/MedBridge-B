@@ -80,7 +80,7 @@ export default function MedicationModal({
   const handleStopMedication = () => {
     updateMedication({
         is_active: false,
-        end_date: new Date().toISOString(),
+        end_date: new Date().toISOString().split("T")[0],
       });
   };
 
