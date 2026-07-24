@@ -10,6 +10,7 @@ export const FormFactory = ({
   config,
   onSubmit,
   isLoading,
+  loadingLabel,
   activeError,
   submitLabel,
   initialData,
@@ -21,14 +22,18 @@ export const FormFactory = ({
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-
     onSubmit(values as Record<string, string>);
   };
 
+  const errorMessage = 
+    typeof activeError === "string"
+      ? activeError
+      : activeError?.message
+
   return (
     <form className="auth-form" onSubmit={handleSubmit}>
-      {activeError && (
-        <div className="server-error-banner">⚠️ {activeError.message}</div>
+      {errorMessage && (
+        <div className="server-error-banner">⚠️ {errorMessage}</div>
       )}
 
       {fields.map((field) => (
@@ -83,7 +88,7 @@ export const FormFactory = ({
       ))}
 
       <button type="submit" className="submit-button" disabled={isLoading}>
-        {isLoading ? "Authenticating..." : submitLabel}
+      {isLoading ? (loadingLabel || "Submitting...") : submitLabel}
       </button>
     </form>
   );
